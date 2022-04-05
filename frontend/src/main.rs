@@ -1,46 +1,77 @@
+#![recursion_limit = "640"]
 use yew::prelude::*;
+use yew_router::prelude::*;
+use wasm_bindgen::prelude::*;
 
-enum Msg {
-    AddOne,
+mod sections;
+mod utils;
+mod pages;
+use pages::*;
+use utils::error::Error;
+
+#[derive(Clone, Routable, PartialEq)]
+pub enum Route{
+    #[at("/")]
+    Store,
+    #[at("/login")]
+    Login,
+    #[at("/signup")]
+    Signup,
+    #[at("/profile")]
+    Profile,
+    #[at("/logout")]
+    Logout,
+    #[at("/contact")]
+    Contact,
+    #[not_found]
+    #[at("/error")]
+    NotFound,
+
 }
 
-struct Model {
-    value: i64,
+fn switch(route: &Route)->Html{
+    match route {
+        Route::Store => html!{"Store"},
+        Route::Login => html!{<login::LoginForm/>},
+        Route::Signup => html!{"Signup"},
+        Route::Profile => html!{"Profile"},
+        Route::Contact => html!{"Contact"},
+        Route::Logout => {todo!()},
+        Route::NotFound => html!{<Error msg={"pizda"}/>},
+    }
 }
 
-impl Component for Model {
-    type Message = Msg;
+pub struct App;
+
+impl Component for App {
+    type Message = ();
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self {
-            value: 0,
-        }
+        Self
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::AddOne => {
-                self.value += 1;
-                // the value has changed so we need to
-                // re-render for it to appear on the page
-                true
-            }
-        }
+        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        // This gives us a component's "`Scope`" which allows us to send messages, etc to the component.
-        let link = ctx.link();
         html! {
-            <div>
-                <button onclick={link.callback(|_| Msg::AddOne)}>{ "+1" }</button>
-                <p>{ self.value }</p>
-            </div>
+            <>
+                <sections::header::Header is_login={false} />
+                <main>
+                    <BrowserRouter>
+                        <Switch<Route> render={Switch::render(switch)} />
+                    </BrowserRouter>
+                </main>
+                <sections::footer::Footer/>
+            </>
         }
     }
 }
 
-fn main() {
-    yew::start_app::<Model>();
+//#[wasm_bindgen(start)]
+pub fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
+    yew::start_app::<App>();
 }
