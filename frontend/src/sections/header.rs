@@ -12,7 +12,7 @@ pub fn header(props: &HeaderProps) -> Html {
         <nav class="navbar">
             <div class="navbar-brand">
                 <a class="navbar-item" href="/">
-                    <img src="logo.png" width="120" height="30"/>
+                    <img src="public/logo.png" width="120" height="30"/>
                 </a>
             </div>
             <div id="navbarBasicExample" class="navbar-menu">

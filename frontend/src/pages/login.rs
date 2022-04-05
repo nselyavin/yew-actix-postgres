@@ -1,11 +1,13 @@
+use bcrypt::{hash, verify, DEFAULT_COST};
 use log;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidateArgs, ValidationError};
-use yew::{html, Component, Context, NodeRef, events::Event};
-use web_sys::{EventTarget, HtmlInputElement};
 use wasm_bindgen::JsCast;
-use bcrypt::{DEFAULT_COST, hash, verify};
+use web_sys::{EventTarget, HtmlInputElement};
+use yew::{events::Event, html, Callback, Component, Context, NodeRef};
+use yew_router::prelude::*;
 
+use crate::Route;
 
 pub enum LoginMessage {
     Login,
@@ -27,8 +29,8 @@ pub struct LoginData {
 }
 
 impl LoginData {
-    pub fn new() -> LoginData{
-        LoginData{
+    pub fn new() -> LoginData {
+        LoginData {
             email: "".to_owned(),
             password: "".to_owned(),
         }
@@ -53,7 +55,7 @@ impl Component for LoginForm {
     }
 
     fn view(&self, ctx: &Context<Self>) -> yew::Html {
-        let onclick = ctx.link().callback(|_| LoginMessage::Login);
+        let onclick = ctx.link().callback_once(|_| LoginMessage::Login);
         let on_email_change = ctx.link().callback(|e: Event| {
             let target: EventTarget = e
                 .target()
@@ -70,9 +72,8 @@ impl Component for LoginForm {
 
         html! {
             <div class="login-form section">
-                <h2 class="title">{"Login"}</h2>
-
-                <div class="field">
+            <h2 class="title">{"Login"}</h2>
+            <div class="field">
                     <p class="control has-icons-left has-icons-right">
                         <input class="input" type="email" onchange={on_email_change} placeholder="Email"/>
                         <span class="icon is-small is-left">
@@ -104,24 +105,26 @@ impl Component for LoginForm {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-
-        match msg{
+        match msg {
             LoginMessage::Login => {
                 log::info!("Login");
+                
+                let history = ctx.link().history().unwrap();
+                history.push(Route::Store);
                 true
-            },
+            }
             LoginMessage::ChangeEmail(val) => {
                 // TODO: change mail
                 log::info!("email: {}", val);
                 self.data.email = val.clone();
                 false
-            },
+            }
             LoginMessage::ChangePassword(val) => {
                 let hashed = hash("hunter2", 10).unwrap();
                 log::info!("password: {:?}", hashed);
                 //self.data.password = val.clone();
                 false
-            },
+            }
         }
     }
 }
