@@ -15,6 +15,8 @@ use utils::not_found::NotFound;
 pub enum Route {
     #[at("/")]
     Store,
+    #[at("/:id")]
+    Detail{id: String},
     #[at("/login")]
     Login,
     #[at("/signup")]
@@ -33,13 +35,12 @@ pub enum Route {
 fn switch(route: &Route) -> Html {
     match route {
         Route::Store => html! {<store::Store/>},
-        Route::Login => html! {<login::LoginForm/>},
-        Route::Signup => html! {"Signup"},
-        Route::Profile => html! {"Profile"},
-        Route::Contact => html! {"Contact"},
-        Route::Logout => {
-            todo!()
-        }
+        Route::Detail{id} => html!{<detail::Detail id={id.clone()}/>},
+        Route::Login => html!{<login::LoginForm/>},
+        Route::Signup => html!{"Signup"},
+        Route::Profile => html!{"Profile"},
+        Route::Contact => html!{"Contact"},
+        Route::Logout => {todo!()},
         Route::NotFound => html! {<NotFound/>},
     }
 }
