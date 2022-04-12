@@ -6,6 +6,7 @@ use wasm_bindgen::prelude::*;
 mod sections;
 mod utils;
 mod pages;
+mod models;
 use pages::*;
 use utils::error::Error;
 
@@ -13,6 +14,8 @@ use utils::error::Error;
 pub enum Route{
     #[at("/")]
     Store,
+    #[at("/:id")]
+    Detail{id: String},
     #[at("/login")]
     Login,
     #[at("/signup")]
@@ -32,6 +35,7 @@ pub enum Route{
 fn switch(route: &Route)->Html{
     match route {
         Route::Store => html!{"Store"},
+        Route::Detail{id} => html!{<detail::Detail id={id.clone()}/>},
         Route::Login => html!{<login::LoginForm/>},
         Route::Signup => html!{"Signup"},
         Route::Profile => html!{"Profile"},
