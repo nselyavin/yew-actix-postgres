@@ -1,13 +1,14 @@
 use bcrypt::{hash, verify, DEFAULT_COST};
 use log;
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidateArgs, ValidationError};
+use validator::*;//{Validate, ValidateArgs, ValidationError, ValidationErrors};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Callback, Component, Context, NodeRef};
 use yew_router::prelude::*;
 
 use crate::Route;
+use crate::models::user::User;
 
 pub enum LoginMessage {
     Login,
@@ -40,6 +41,7 @@ impl LoginData {
 pub struct LoginForm {
     pub is_auth: bool,
     data: LoginData,
+    error: Result<(), ValidationErrors>
 }
 
 impl Component for LoginForm {
@@ -51,18 +53,21 @@ impl Component for LoginForm {
         Self {
             is_auth: false,
             data: LoginData::new(),
+            error: Ok(()),
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> yew::Html {
+        // On login
         let onclick = ctx.link().callback_once(|_| LoginMessage::Login);
+        // On email change
         let on_email_change = ctx.link().callback(|e: Event| {
             let target: EventTarget = e
                 .target()
                 .expect("Event should have a target when dispatched");
             LoginMessage::ChangeEmail(target.unchecked_into::<HtmlInputElement>().value())
         });
-
+        // On pass change
         let on_password_change = ctx.link().callback(|e: Event| {
             let target: EventTarget = e
                 .target()
@@ -70,8 +75,17 @@ impl Component for LoginForm {
             LoginMessage::ChangePassword(target.unchecked_into::<HtmlInputElement>().value())
         });
 
+        
         html! {
             <div class="login-form section">
+            {
+                // TODO: нахуй этот метод
+                if let Err(e) = &self.error{
+                    html!{ for e.field_errors().into_iter().map(|(a, b)|{format!("{:?}", b)})}
+                }else{
+                    html!{}
+                }
+            }
             <h2 class="title">{"Login"}</h2>
             <div class="field">
                     <p class="control has-icons-left has-icons-right">
@@ -108,13 +122,15 @@ impl Component for LoginForm {
         match msg {
             LoginMessage::Login => {
                 log::info!("Login");
-                
-                let history = ctx.link().history().unwrap();
-                history.push(Route::Store);
+                self.error = self.data.validate();
+                if let Ok(()) = self.error{
+                    let history = ctx.link().history().unwrap();
+                    history.push(Route::Store);
+                }
                 true
             }
             LoginMessage::ChangeEmail(val) => {
-                // TODO: change mail
+                // TODO: попробовать статичные функции
                 log::info!("email: {}", val);
                 self.data.email = val.clone();
                 false

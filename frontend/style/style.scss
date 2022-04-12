@@ -20,3 +20,13 @@ main {
 .login-form{
     width: 400px;
 }
+
+
+.scale :hover{
+    transition: .2s;
+    transform: scale(1.01);
+}
+
+.noscale :hover{
+    transform: scale(1.00);
+}

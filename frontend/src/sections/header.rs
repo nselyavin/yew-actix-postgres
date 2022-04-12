@@ -1,4 +1,7 @@
-use yew::{function_component, html, Component, Context, Properties};
+use log::debug;
+use yew::{function_component, html, Component, Context, Properties, use_context, Callback};
+
+use crate::models::user::User;
 
 #[derive(Properties, PartialEq, Clone)]
 pub struct HeaderProps {

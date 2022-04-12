@@ -1,16 +1,18 @@
 #![recursion_limit = "640"]
-use yew::prelude::*;
-use yew_router::prelude::*;
 use wasm_bindgen::prelude::*;
+use yew::prelude::*;
+use yew::{Context, ContextProvider};
+use yew_router::prelude::*;
 
+mod models;
+mod pages;
 mod sections;
 mod utils;
-mod pages;
 use pages::*;
-use utils::error::Error;
+use utils::not_found::NotFound;
 
 #[derive(Clone, Routable, PartialEq)]
-pub enum Route{
+pub enum Route {
     #[at("/")]
     Store,
     #[at("/login")]
@@ -26,47 +28,41 @@ pub enum Route{
     #[not_found]
     #[at("/error")]
     NotFound,
-
 }
 
-fn switch(route: &Route)->Html{
+fn switch(route: &Route) -> Html {
     match route {
-        Route::Store => html!{"Store"},
-        Route::Login => html!{<login::LoginForm/>},
-        Route::Signup => html!{"Signup"},
-        Route::Profile => html!{"Profile"},
-        Route::Contact => html!{"Contact"},
-        Route::Logout => {todo!()},
-        Route::NotFound => html!{<Error msg={"pizda"}/>},
+        Route::Store => html! {<store::Store/>},
+        Route::Login => html! {<login::LoginForm/>},
+        Route::Signup => html! {"Signup"},
+        Route::Profile => html! {"Profile"},
+        Route::Contact => html! {"Contact"},
+        Route::Logout => {
+            todo!()
+        }
+        Route::NotFound => html! {<NotFound/>},
     }
 }
 
-pub struct App;
+#[function_component(App)]
+fn app() -> Html {
+    let ctx = use_state(|| models::user::User {
+        email: "".to_owned(),
+        username: "".to_owned(),
+    });
 
-impl Component for App {
-    type Message = ();
-    type Properties = ();
-
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self
-    }
-
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        true
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        html! {
-            <>
-                <sections::header::Header is_login={false} />
+    html! {
+        <>
+            <ContextProvider<models::user::User> context={(*ctx).clone()}>
+                <sections::header::Header is_login={false}/>
                 <main>
                     <BrowserRouter>
                         <Switch<Route> render={Switch::render(switch)} />
                     </BrowserRouter>
                 </main>
                 <sections::footer::Footer/>
-            </>
-        }
+            </ContextProvider<models::user::User>>
+        </>
     }
 }
 
