@@ -19,7 +19,7 @@ impl Item {
             name: "Name".to_string(),
             description: "Description".to_string(),
             cost: 0.0,
-            components: Vec::default(),
+            components: vec!{"comp_1".to_string(), "comp_2".to_string()},
         }
     }
 }

@@ -16,7 +16,7 @@ pub enum Route {
     #[at("/")]
     Store,
     #[at("/:id")]
-    Detail{id: String},
+    Detail{id: i64},
     #[at("/login")]
     Login,
     #[at("/signup")]
@@ -35,9 +35,9 @@ pub enum Route {
 fn switch(route: &Route) -> Html {
     match route {
         Route::Store => html! {<store::Store/>},
-        Route::Detail{id} => html!{<detail::Detail id={id.clone()}/>},
+        Route::Detail{id} => html!{<detail::Detail id={*id}/>},
         Route::Login => html!{<login::LoginForm/>},
-        Route::Signup => html!{"Signup"},
+        Route::Signup => html!{<signup::SignupForm/>},
         Route::Profile => html!{"Profile"},
         Route::Contact => html!{"Contact"},
         Route::Logout => {todo!()},
