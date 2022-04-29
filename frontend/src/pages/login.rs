@@ -7,7 +7,7 @@ use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Callback, Component, Context, NodeRef};
 use yew_router::prelude::*;
 
-use crate::Route;
+use crate::PrivateRoute;
 use crate::models::user::User;
 
 pub enum LoginMessage {
@@ -125,7 +125,7 @@ impl Component for LoginForm {
                 self.error = self.data.validate();
                 if let Ok(()) = self.error{
                     let history = ctx.link().history().unwrap();
-                    history.push(Route::Store);
+                    history.push(PrivateRoute::Store);
                 }
                 true
             }

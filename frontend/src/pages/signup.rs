@@ -8,8 +8,9 @@ use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Callback, Component, Context, NodeRef};
 use yew_router::prelude::*;
 
-use crate::Route;
+use crate::PublicRoute;
 use crate::models::user::User;
+use crate::utils::error_to_str::*;
 
 pub enum SignupMessage {
     Signup,
@@ -151,7 +152,7 @@ impl Component for SignupForm {
 
                 if let None = self.error{
                     let history = ctx.link().history().unwrap();
-                    history.push(Route::Store);
+                    history.push(PublicRoute::Login);
                 }
                 true
             }
@@ -160,17 +161,10 @@ impl Component for SignupForm {
                 self.data.username = self.username.cast::<HtmlInputElement>().unwrap().value();
                 self.data.password = self.password.cast::<HtmlInputElement>().unwrap().value();
                 self.error = None;
-                let res= self.data.validate();
 
                 let res = self.data.validate();
                 if let Err(errs) = res{
-                    log::warn!("Error to signup: {:?}", errs.field_errors());
-
-                    if let Some(err) = errs.field_errors().get("email"){
-                        self.error = Some("Bad email".to_string());
-                    } else if let Some(err) = errs.field_errors().get("password"){
-                        self.error = Some("Password min length 8".to_string());
-                    }
+                    self.error = Some(validErr_to_str(&errs));
                 }
 
                 false

@@ -10,17 +10,14 @@ mod sections;
 mod utils;
 use pages::*;
 use utils::not_found::NotFound;
+use utils::requests::*;
 
 #[derive(Clone, Routable, PartialEq)]
-pub enum Route {
+pub enum PrivateRoute {
     #[at("/")]
     Store,
     #[at("/:id")]
     Detail{id: i64},
-    #[at("/login")]
-    Login,
-    #[at("/signup")]
-    Signup,
     #[at("/profile")]
     Profile,
     #[at("/logout")]
@@ -32,39 +29,77 @@ pub enum Route {
     NotFound,
 }
 
-fn switch(route: &Route) -> Html {
+#[derive(Clone, Routable, PartialEq)]
+enum PublicRoute {
+    #[at("/login")]
+    Login,
+    #[at("/signup")]
+    Signup,
+    #[at("/contact")]
+    Contact,
+    #[not_found]
+    #[at("/404")]
+    NotFound,
+}
+
+fn public_switch(route: &PublicRoute) -> Html {
     match route {
-        Route::Store => html! {<store::Store/>},
-        Route::Detail{id} => html!{<detail::Detail id={*id}/>},
-        Route::Login => html!{<login::LoginForm/>},
-        Route::Signup => html!{<signup::SignupForm/>},
-        Route::Profile => html!{"Profile"},
-        Route::Contact => html!{"Contact"},
-        Route::Logout => {todo!()},
-        Route::NotFound => html! {<NotFound/>},
+        PublicRoute::Login => html! {<login::LoginForm/>},
+        PublicRoute::Signup => html! {<signup::SignupForm/>},
+        PublicRoute::Contact => html! {<h2>{"Contact"}</h2>},
+        PublicRoute::NotFound => html! {<Redirect<PublicRoute> to={PublicRoute::Login}/>},
+    }
+}
+
+fn private_switch(route: &PrivateRoute) -> Html {
+    match route {
+        PrivateRoute::Store => html! {<store::Store/>},
+        PrivateRoute::Detail{id} => html!{<detail::Detail id={*id}/>},
+        PrivateRoute::Profile => html!{"Profile"},
+        PrivateRoute::Contact => html!{"Contact"},
+        PrivateRoute::Logout => {todo!()},
+        PrivateRoute::NotFound => html! {<NotFound/>},
     }
 }
 
 #[function_component(App)]
 fn app() -> Html {
-    let ctx = use_state(|| models::user::User {
-        email: "".to_owned(),
-        username: "".to_owned(),
-    });
 
-    html! {
-        <>
-            <ContextProvider<models::user::User> context={(*ctx).clone()}>
-                <sections::header::Header is_login={false}/>
-                <main>
-                    <BrowserRouter>
-                        <Switch<Route> render={Switch::render(switch)} />
-                    </BrowserRouter>
-                </main>
+    match GET_user(){
+        Ok(user) => {
+        let ctx = use_state(|| models::user::User {
+            ..user
+        });
+
+        html! {
+            <>
+                <ContextProvider<models::user::User> context={(*ctx).clone()}>
+                    <sections::header::Header />
+                    <main>
+                        <BrowserRouter>
+                            <Switch<PrivateRoute> render={Switch::render(private_switch)} />
+                        </BrowserRouter>
+                    </main>
+                    <sections::footer::Footer/>
+                </ContextProvider<models::user::User>>
+            </>
+        }
+    },
+    Err(_) => {
+        return html!{
+            <>
+                <sections::header::Header />
+                        <main>
+                            <BrowserRouter>
+                                <Switch<PublicRoute> render={Switch::render(public_switch)} />
+                            </BrowserRouter>
+                        </main>
                 <sections::footer::Footer/>
-            </ContextProvider<models::user::User>>
-        </>
+            </>
+        }
     }
+
+}   
 }
 
 //#[wasm_bindgen(start)]

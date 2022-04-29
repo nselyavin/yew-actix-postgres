@@ -10,7 +10,7 @@ pub struct User{
 impl User{
     pub fn new()-> User{
         User{
-            username: "username".to_string(),
+            username: "Fume".to_string(),
             email: "email".to_string(),
         }
     }
