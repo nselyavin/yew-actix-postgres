@@ -26,13 +26,16 @@ frontend:
 ____
 ## Api
 ##### localhost:8080/
-| Type          | Request         | Description  |
-|:------------- |:----------------| -------------:|
-| GET           | /               | Entrypoint of the app |
-| GET           | /users          |          Get all users|
-| GET           | /users/{id}     |         Get user by id|
-| POST          | /signup         |         User Signup|
-| POST          | /login          |         User Login|
-| GET           | /medicines       |         Get all medicines|
-| GET           | /medicines/{id}  |         Get medicine by id|
-| POST           | /medicines/{id}/add  |         Add medicine to user bucket|
+| Type          | Request          | Description   |Auth |  
+|:------------- |:-----------------| -------------:|-------------:|
+| GET           | /                | Entrypoint of the app ||
+| POST          | /signup          |         User Signup||
+| POST          | /login           |         User Login||
+| GET           | /info            |     Get detail of medicine by  his id||
+| GET           | /users           |          Get all users| * |
+| GET           | /users/detail    |          Get current user detail| * |
+| GET           | /users/{id}      |         Get user by id| * |
+| GET           | /users/{id}      |         Get user by id| * |
+| POST          | /medicines/new   |        Reg new medicine| * |
+| GET           | /medicines       |        Get list medicines of company| * |
+| DELETE        | /medicines/delete|        Get list medicines of company| * |
