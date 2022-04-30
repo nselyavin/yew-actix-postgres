@@ -24,8 +24,8 @@ frontend:
   trunk serve
 ```
 ____
-## Api
-##### localhost:8080/
+## Backed Api
+##### localhost:8080/app/
 | Type          | Request          | Description   |Auth |  
 |:------------- |:-----------------| -------------:|-------------:|
 | GET           | /                | Entrypoint of the app ||
