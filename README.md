@@ -24,11 +24,10 @@ frontend:
   trunk serve
 ```
 ____
-## Api
-##### localhost:8080/
+## Backend Api
+##### localhost:8080/app/
 | Type          | Request          | Description   |Auth |  
 |:------------- |:-----------------| -------------:|-------------:|
-| GET           | /                | Entrypoint of the app ||
 | POST          | /signup          |         User Signup||
 | POST          | /login           |         User Login||
 | GET           | /info            |     Get detail of medicine by  his id||
