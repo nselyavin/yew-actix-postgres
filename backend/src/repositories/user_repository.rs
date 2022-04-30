@@ -1,20 +1,21 @@
 
 use rbatis::{rbatis::Rbatis, snowflake::Snowflake, core::Result};
 
-use models::users::UserInfo;
+use crate::models::user::User;
+use crate::models::user::UserSignup;
 
 pub struct UserRepository;
 
 impl UserRepository{
-    pub fn create(user: &UserLogin, rb: &Rbatis) -> Result<UserInfo>{
+    pub fn create(user: &UserSignup, rb: &Rbatis) -> Result<UserSignup>{
         todo!()
     }
 
-    pub fn update() -> Result<UserInfo>{
+    pub fn update() -> Result<User>{
         todo!()
     }
 
-    pub fn find_by_id(id: u64) -> Result<UserInfo>{
+    pub fn find_by_id(id: u64) -> Result<User>{
         todo!()
     }
 }

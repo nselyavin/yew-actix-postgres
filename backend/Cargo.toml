@@ -15,4 +15,6 @@ simple_logger = "2.1.0"
 log = "0.4.16"
 jsonwebtoken = "8.1.0"
 rbson = "2.0.3"
+config = "0.13.0"
+dotenv = "0.15.0"
 rbatis = {version = "3.1.6", features = ["postgres"]}

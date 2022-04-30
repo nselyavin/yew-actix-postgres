@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 
 #[crud_table(table_name: t_user)]
 #[derive(Serialize, Deserialize)]
-pub struct UserInfo{
+pub struct User{
     pub id: u64,
     pub username: String,
     pub email: String,
@@ -17,7 +17,7 @@ pub struct UserLogin{
 }
 
 #[derive(Deserialize)]
-pub struct UserAuth{
+pub struct UserSignup{
     pub email: String,
     pub username: String,
     pub password: String,
