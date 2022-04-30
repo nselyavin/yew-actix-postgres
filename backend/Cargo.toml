@@ -7,12 +7,12 @@ authors = ["Nikita Selyavin"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "3.3.3"
-actix-http = "2.2.2"
-time = "0.2.27"
-diesel = "1.4.8"
-serde = "1.0.136"
-serde_derive = "1.0.136"
+actix-web = "4.0.1"
+serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
-sha2 = "0.10.2"
-bip32 = "0.3.0"
+bcrypt = "0.12.1"
+simple_logger = "2.1.0"
+log = "0.4.16"
+jsonwebtoken = "8.1.0"
+rbson = "2.0.3"
+rbatis = {version = "3.1.6", features = ["postgres"]}
