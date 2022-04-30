@@ -3,6 +3,7 @@ use actix_web::{web, get, post, HttpRequest, HttpResponse, Responder};
 
 use crate::models::user::UserSignup;
 use crate::repositories::user_repository;
+use crate::AppState;
 
 pub fn major_scope() -> actix_web::Scope{
     web::scope("")
@@ -12,11 +13,11 @@ pub fn major_scope() -> actix_web::Scope{
 }
 
 #[post("/signup")]
-async fn signup(_data: web::Json<UserSignup>) -> impl Responder{
+async fn signup(_data: web::Json<UserSignup>, _state: web::Data<AppState>) -> impl Responder{
     log::info!("Trying signup '{}'", _data.username);
 
-    //user_repository.create(_data.try_into::<UserSignup>(), );
-    
+    let user_data: UserSignup = _data.into_inner();
+    user_repository::create(&user_data, _state.rb.as_ref());
     
     HttpResponse::Ok()
 }
