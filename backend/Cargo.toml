@@ -18,3 +18,4 @@ rbson = "2.0.3"
 config = "0.13.0"
 dotenv = "0.15.0"
 rbatis = {version = "3.1.6", features = ["postgres"]}
+chrono = "0.4.19"

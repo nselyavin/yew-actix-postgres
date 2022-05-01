@@ -9,7 +9,14 @@ pub struct User{
     pub username: String,
     pub email: String,
     pub created_date: DateTimeNative,
-    pub password: Option<String>,
+    pub password: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UserInfo{
+    pub username: String,
+    pub email: String,
+    pub created_date: String,
 }
 
 #[derive(Deserialize)]
@@ -26,10 +33,10 @@ pub struct UserSignup{
 }
 
 
-impl Responder for User {
+impl Responder for UserInfo {
     type Body = BoxBody;
 
-    fn respond_to(self, req: &actix_web::HttpRequest) -> actix_web::HttpResponse<Self::Body> {
+    fn respond_to(self, _req: &actix_web::HttpRequest) -> actix_web::HttpResponse<Self::Body> {
         let body = serde_json::to_string(&self).unwrap();
 
         HttpResponse::Ok()
