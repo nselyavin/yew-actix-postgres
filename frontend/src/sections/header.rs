@@ -1,13 +1,13 @@
 use log::debug;
 use yew::{function_component, html, Component, Context, Properties, use_context, Callback};
 
-use crate::models::{user::User, self};
+use crate::models::{user::UserInfo, self};
 
 
 #[function_component(Header)]
 pub fn header() -> Html {
 
-    let opt_user = use_context::<models::user::User>();
+    let opt_user = use_context::<models::user::UserInfo>();
 
     html! {
         <nav class="navbar">

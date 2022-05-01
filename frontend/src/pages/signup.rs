@@ -9,8 +9,8 @@ use yew::{events::Event, html, Callback, Component, Context, NodeRef};
 use yew_router::prelude::*;
 
 use crate::PublicRoute;
-use crate::models::user::User;
-use crate::utils::error_to_str::*;
+use crate::models::user::UserSignup;
+use crate::utils::{requests::POST_signup, error_to_str::validErr_to_str};
 
 pub enum SignupMessage {
     Signup,
@@ -150,10 +150,12 @@ impl Component for SignupForm {
                     return true;
                 }
 
-                if let None = self.error{
-                    let history = ctx.link().history().unwrap();
-                    history.push(PublicRoute::Login);
-                }
+                POST_signup();
+
+                // if let None = self.error{
+                //     let history = ctx.link().history().unwrap();
+                //     history.push(PublicRoute::Login);
+                // }
                 true
             }
             SignupMessage::UpdateField => {

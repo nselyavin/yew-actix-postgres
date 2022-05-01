@@ -65,15 +65,15 @@ fn private_switch(route: &PrivateRoute) -> Html {
 #[function_component(App)]
 fn app() -> Html {
 
-    match GET_user(){
+    match GET_user_detail(){
         Ok(user) => {
-        let ctx = use_state(|| models::user::User {
+        let ctx = use_state(|| models::user::UserInfo {
             ..user
         });
 
         html! {
             <>
-                <ContextProvider<models::user::User> context={(*ctx).clone()}>
+                <ContextProvider<models::user::UserInfo> context={(*ctx).clone()}>
                     <sections::header::Header />
                     <main>
                         <BrowserRouter>
@@ -81,7 +81,7 @@ fn app() -> Html {
                         </BrowserRouter>
                     </main>
                     <sections::footer::Footer/>
-                </ContextProvider<models::user::User>>
+                </ContextProvider<models::user::UserInfo>>
             </>
         }
     },

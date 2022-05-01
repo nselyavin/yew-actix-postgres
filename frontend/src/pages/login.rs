@@ -8,7 +8,7 @@ use yew::{events::Event, html, Callback, Component, Context, NodeRef};
 use yew_router::prelude::*;
 
 use crate::PrivateRoute;
-use crate::models::user::User;
+use crate::models::user::UserLogin;
 
 pub enum LoginMessage {
     Login,
@@ -21,26 +21,11 @@ enum ErrorType {
     BadEmail,
 }
 
-#[derive(Debug, Validate, Deserialize, Serialize)]
-pub struct LoginData {
-    #[validate(email)]
-    email: String,
-    #[validate(length(min = 8))]
-    password: String,
-}
-
-impl LoginData {
-    pub fn new() -> LoginData {
-        LoginData {
-            email: "".to_owned(),
-            password: "".to_owned(),
-        }
-    }
-}
 
 pub struct LoginForm {
     pub is_auth: bool,
-    data: LoginData,
+    // TODO переписать как у signup
+    data: UserLogin,
     error: Result<(), ValidationErrors>
 }
 
@@ -52,7 +37,7 @@ impl Component for LoginForm {
     fn create(ctx: &Context<Self>) -> Self {
         Self {
             is_auth: false,
-            data: LoginData::new(),
+            data: UserLogin::default(),
             error: Ok(()),
         }
     }
