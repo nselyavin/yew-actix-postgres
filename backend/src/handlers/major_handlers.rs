@@ -1,8 +1,8 @@
 
 use actix_web::{web, get, post, HttpRequest, HttpResponse, Responder};
 
-use crate::models::user::UserSignup;
-use crate::repositories::user_repository;
+use crate::models::user::{UserSignup};
+use crate::repositories::user_repository::{self, create};
 use crate::AppState;
 
 pub fn major_scope() -> actix_web::Scope{
@@ -13,13 +13,18 @@ pub fn major_scope() -> actix_web::Scope{
 }
 
 #[post("/signup")]
-async fn signup(_data: web::Json<UserSignup>, _state: web::Data<AppState>) -> impl Responder{
+async fn signup(_req: HttpRequest, _data: web::Json<UserSignup>, _state: web::Data<AppState>) -> impl Responder{
     log::info!("Trying signup '{}'", _data.username);
 
     let user_data: UserSignup = _data.into_inner();
-    user_repository::create(&user_data, _state.rb.as_ref());
-    
-    HttpResponse::Ok()
+    match user_repository::create(&user_data, _state.rb.as_ref(), _state.sflake.as_ref()).await{
+        Ok(user) => {
+            user.respond_to(&_req)
+        },
+        Err(_) => {
+            HttpResponse::BadRequest().finish()
+        },
+    }    
 }
 
 #[post("/login")]

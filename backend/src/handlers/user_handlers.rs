@@ -1,4 +1,4 @@
-use actix_web::{web, HttpRequest, Responder, HttpResponse, get, post};
+use actix_web::{web, HttpRequest, Responder, HttpResponse, get};
 use crate::AppState;
 
 pub fn user_scope() -> actix_web::Scope{

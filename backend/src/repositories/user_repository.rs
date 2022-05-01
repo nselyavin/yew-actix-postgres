@@ -1,3 +1,4 @@
+use bcrypt::{hash, verify, DEFAULT_COST};
 use rbatis::crud::CRUD;
 use rbatis::{core::Result, rbatis::Rbatis, snowflake::Snowflake};
 
@@ -11,6 +12,7 @@ pub async fn create(user_data: &UserSignup, rb: &Rbatis, sflake: &Snowflake) -> 
         username: user_data.username.clone(),
         email: user_data.email.clone(),
         created_date: rbatis::DateTimeNative::now(),
+        password: Some(hash(user_data.password.clone(), 8).unwrap()),
     };
 
     match rb.save(&user, &[]).await{
@@ -20,7 +22,7 @@ pub async fn create(user_data: &UserSignup, rb: &Rbatis, sflake: &Snowflake) -> 
             Ok(user)
         },
         Err(err) => {
-            log::info!("Failed create user");
+            log::error!("Failed create user");
             Err(err)
         }
     }

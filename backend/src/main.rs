@@ -42,7 +42,7 @@ async fn main() -> std::io::Result<()> {
     let app_state = AppState{
         rb: Arc::new(rb),
         key: Arc::new(env::var("KEY").unwrap()),
-        sflake: Arc::new(Snowflake::new(1420041600000, -1, -1))
+        sflake: Arc::new(Snowflake::new(161476480000, 1, 1))
     };
 
     log::info!("Start server");
