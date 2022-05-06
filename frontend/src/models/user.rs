@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+use wasm_bindgen::JsValue;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct UserInfo {
@@ -18,7 +19,7 @@ impl UserInfo {
     }
 }
 
-#[derive(Deserialize, Debug, Validate, Serialize)]
+#[derive(Deserialize, Debug, Clone, Validate, Serialize, PartialEq)]
 pub struct UserLogin {
     pub email: String,
     pub password: String,
@@ -33,7 +34,7 @@ impl UserLogin {
     }
 }
 
-#[derive(Deserialize, Debug, Validate, Serialize)]
+#[derive(Deserialize, Debug, Validate, Serialize, PartialEq)]
 pub struct UserSignup {
     pub username: String,
     pub email: String,

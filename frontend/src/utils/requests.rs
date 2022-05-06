@@ -1,46 +1,67 @@
-use std::fmt::{Debug};
-use std::result::Result;
-use gloo_net::http::Request;
-use serde::{ser::Error, de::DeserializeOwned};
+use reqwasm::http::{Method, Request};
+use serde::{de::DeserializeOwned, ser::Error};
+use serde::{Deserialize, Serialize};
+use wasm_bindgen::JsValue;
+use std::cell::RefCell;
+use std::fmt::Debug;
+use std::rc::Rc;
 use std::result;
-use crossbeam::channel;
-use tokio::runtime::Handle;
-//use web_sys::{Request, RequestInit};
+use std::result::Result;
+use std::sync::Arc;
+use web_sys::RequestMode;
 
 use crate::models::{item::Item, user::*};
 
-enum Method{
-    Get,
-    Post,
-    Update,
-    Delete,
+struct ReqResult<T> {
+    code: Arc<u16>,
+    body: Arc<T>,
 }
 
-// TODO реализовать запросы на сервер
-async fn request<'a, T>(url: &'a str, method: &'a str) -> Result<i32, u16>
-where T: DeserializeOwned + Debug + Send
-{
-    // Gloo request
-    let resp = Request::get("localhost:8080/login")
-        .send().await.unwrap();
+#[derive(Clone, PartialEq, Deserialize)]
+struct Video {
+    id: usize,
+    title: String,
+    speaker: String,
+    url: String,
+}
 
-    if resp.status() == 200{
-        match resp.json::<T>().await{
-            Ok(obj) => {
-                Ok(12)
-            },
-            Err(err) => {
-                log::error!("Failed parse object {:?}", err);
-                Err(500)
-            },
-        }
-    } else {
-        log::error!("Failed requset {}: {:?}", resp.status(), resp.body());
-        Err(resp.status())
+
+async fn newGetRequest(url: &str)-> Request{
+    Request::new(url)
+}
+
+async fn newRequest<U>(url: &str, method: Method, body: &U)-> Request
+where     
+    U: Serialize + Debug + ?Sized,
+{
+    let ser_body = serde_json::to_string(body).unwrap();
+    Request::new(url).method(method).body(ser_body)
+}
+
+
+async fn request<T, U>(url: &str, method: Method, body: Option<&U>) -> Result<T, u16>
+where
+    T: DeserializeOwned + Debug + Send,
+    U: Serialize + Debug + ?Sized,
+{
+    let mut ser = "".to_string();
+    if let Some(val) = body {
+        ser = serde_json::to_string(&val).unwrap();
+    }
+
+    let mut req = match method{
+        Method::GET => newGetRequest(url).await,
+        Method::POST => newRequest(url, method, &body.unwrap()).await,
+        _ => return Err(404),
+    };
+        
+    let resp = req.send().await.unwrap();
+
+    match resp.json::<T>().await {
+        Ok(val) => Ok(val),
+        Err(err) => Err(resp.status()),
     }
 }
-
-
 
 pub fn GET_items() -> Result<Vec<Item>, u16> {
     let mut items = vec![];
@@ -61,25 +82,16 @@ pub fn GET_item(id: i64) -> Result<Item, i16> {
     Ok(Item::new(id))
 }
 
-pub fn POST_login() -> Result<(), i16> {
-    Ok(())
+pub async fn POST_login(data: &UserLogin) -> Result<UserInfo, u16> {
+    let res = request::<UserInfo, UserLogin>("/login", Method::POST, Some(&data)).await;
+    res
 }
 
 pub fn POST_signup() -> result::Result<(), u16> {
-    let (tx, rx) = channel::bounded(1);
-
-    let handle = Handle::current();
-
-    handle.spawn(async move{ 
-        let res: Result<i32, u16> = request::<i32>("/login", "get").await;
-        let _ = tx.send(res);
-    });
-
-    let res = rx.recv().unwrap();
-
     Ok(())
 }
 
-pub fn GET_user_detail() -> result::Result<UserInfo, u16>{
-    Ok(UserInfo::default())
+pub fn GET_user_detail() -> result::Result<UserInfo, u16> {
+    // Ok(UserInfo::default())
+    Err(404)
 }

@@ -1,14 +1,23 @@
+
+use std::cell::RefCell;
+use std::ops::Deref;
+use std::rc::Rc;
+use std::sync::{Mutex, Arc};
+
 use bcrypt::{hash, verify, DEFAULT_COST};
 use log;
+use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
-use validator::*;//{Validate, ValidateArgs, ValidationError, ValidationErrors};
+use validator::*; //{Validate, ValidateArgs, ValidationError, ValidationErrors};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Callback, Component, Context, NodeRef};
+use yew::{use_state, UseStateHandle};
 use yew_router::prelude::*;
 
-use crate::PrivateRoute;
 use crate::models::user::UserLogin;
+use crate::utils::requests::POST_login;
+use crate::PrivateRoute;
 
 pub enum LoginMessage {
     Login,
@@ -21,12 +30,11 @@ enum ErrorType {
     BadEmail,
 }
 
-
 pub struct LoginForm {
     pub is_auth: bool,
     // TODO переписать как у signup
     data: UserLogin,
-    error: Result<(), ValidationErrors>
+    error: Result<(), ValidationErrors>,
 }
 
 impl Component for LoginForm {
@@ -60,7 +68,6 @@ impl Component for LoginForm {
             LoginMessage::ChangePassword(target.unchecked_into::<HtmlInputElement>().value())
         });
 
-        
         html! {
             <div class="login-form section">
             {
@@ -108,11 +115,19 @@ impl Component for LoginForm {
             LoginMessage::Login => {
                 log::info!("Login");
                 self.error = self.data.validate();
+                
+                let user_data= self.data.clone();
+                let history = ctx.link().history().unwrap();
+
                 if let Ok(()) = self.error{
-                    let history = ctx.link().history().unwrap();
-                    history.push(PrivateRoute::Store);
+                    wasm_bindgen_futures::spawn_local(async move{
+                        let res = POST_login(&user_data).await;
+                        log::info!("POST_login: {:?}", res);
+                        history.push(PrivateRoute::Store);
+                    });
                 }
-                true
+                
+                false
             }
             LoginMessage::ChangeEmail(val) => {
                 // TODO: попробовать статичные функции
@@ -121,9 +136,8 @@ impl Component for LoginForm {
                 false
             }
             LoginMessage::ChangePassword(val) => {
-                let hashed = hash("hunter2", 10).unwrap();
-                log::info!("password: {:?}", hashed);
-                //self.data.password = val.clone();
+                log::info!("password: {}", val);
+                self.data.password = val.clone();
                 false
             }
         }
