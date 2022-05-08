@@ -1,14 +1,17 @@
-use reqwasm::http::{Method, Request};
+use cookie::Expiration;
+use cookie::time::OffsetDateTime;
+// use reqwasm::http::{Method, Request};
 use serde::{de::DeserializeOwned, ser::Error};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsValue;
+use wasm_cookies::CookieOptions;
 use std::cell::RefCell;
 use std::fmt::Debug;
 use std::rc::Rc;
 use std::result;
 use std::result::Result;
 use std::sync::Arc;
-use web_sys::RequestMode;
+use web_sys::{Request};
 
 use crate::models::{item::Item, user::*};
 
@@ -26,37 +29,51 @@ struct Video {
 }
 
 
-async fn newGetRequest(url: &str)-> Request{
-    Request::new(url)
+async fn new_get_request(url: &str)-> Request
+{
+    Request::new_with_str(format!("http://localhost:8080{}", url).as_str())?
 }
-
-async fn newRequest<U>(url: &str, method: Method, body: &U)-> Request
+    
+async fn new_request<U>(url: &str, method: &str, body: &U)-> Request
 where     
     U: Serialize + Debug + ?Sized,
 {
     let ser_body = serde_json::to_string(body).unwrap();
-    Request::new(url).method(method).body(ser_body)
+    Request::new_with_str(format!("http://localhost:8080{}", url).as_str())
+        .header("Content-Type", "application/json")
+        .method(method).body(ser_body)
 }
 
 
-async fn request<T, U>(url: &str, method: Method, body: Option<&U>) -> Result<T, u16>
+async fn request<T, U>(url: &str, method: &str, body: Option<&U>) -> Result<T, u16>
 where
     T: DeserializeOwned + Debug + Send,
     U: Serialize + Debug + ?Sized,
 {
-    let mut ser = "".to_string();
-    if let Some(val) = body {
-        ser = serde_json::to_string(&val).unwrap();
-    }
-
     let mut req = match method{
-        Method::GET => newGetRequest(url).await,
-        Method::POST => newRequest(url, method, &body.unwrap()).await,
+        "get" => new_get_request(url).await,
+        "post" => new_request(url, method, &body.unwrap()).await,
         _ => return Err(404),
     };
         
     let resp = req.send().await.unwrap();
 
+    log::info!("Resp: {:?}", resp);
+    if let Some(cook) = resp.headers().get("set-cookie"){
+        let token = cookie::Cookie::parse(cook).unwrap(); 
+
+        let options = wasm_cookies::CookieOptions{
+            path: token.path(),
+            domain: token.domain(),
+            expires: Some(token.expires_datetime().unwrap().to_string()),
+            secure: token.secure().unwrap(),
+            same_site: wasm_cookies::SameSite::default(),
+        };
+
+        log::info!("Try set token: {:?}", token);
+        wasm_cookies::set_raw(token.name(), token.value(), &options)
+    }
+    
     match resp.json::<T>().await {
         Ok(val) => Ok(val),
         Err(err) => Err(resp.status()),

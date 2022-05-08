@@ -23,13 +23,13 @@ bcrypt = "0.12.1"
 async-std = "1.11.0"
 reqwasm = "0.5.0"
 wasm-bindgen-futures = "0.4.30"
-# wasm-futures-executor = "0.2"
 crossbeam = "0.8.1"
 getrandom = { version = "0.2", features = ["js"] }
 wasm-rs-shared-channel = "0.1.0"
 futures = "0.3.21"
 pollster = "0.2.5"
-# wasmtime = "0.36.0"
+wasm-cookies = "0.1.0"
+cookie = "0.16.0"
 
 [cargo-web]
 minimum-version = "0.6.0"

@@ -6,6 +6,7 @@ use std::sync::Arc;
 use dotenv::dotenv;
 use std::env;
 use actix_web::{middleware::Logger, web, App,  HttpRequest, HttpServer,  Result};
+use actix_cors::Cors;
 use log::Level;
 
 mod repositories;
@@ -47,9 +48,15 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Start server");
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:3000")
+            .allowed_methods(vec!["GET", "POST"])
+            .allow_any_header();
+
         App::new()
             .app_data(web::Data::new(app_state.to_owned()))
             .wrap(Logger::default())
+            .wrap(cors)
             .service(user_scope())
             .service(major_scope())
     })

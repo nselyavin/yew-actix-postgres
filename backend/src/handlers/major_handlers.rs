@@ -37,6 +37,7 @@ async fn signup(_req: HttpRequest, _data: web::Json<UserSignup>, _state: web::Da
 
 #[post("/login")]
 async fn login(_req:HttpRequest, _data: web::Json<UserLogin>, _state: web::Data<AppState>) -> impl Responder{
+    log::info!("Try login: {}", _data.email);
     let user = user_repository::find_by_email(&_data.email, _state.rb.as_ref()).await;
 
     if let None = user{
