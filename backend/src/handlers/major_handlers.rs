@@ -1,6 +1,6 @@
 
-use actix_web::cookie::Cookie;
-use actix_web::cookie::time::Duration;
+use actix_web::cookie::{Cookie, Expiration};
+use actix_web::cookie::time::{Duration, OffsetDateTime};
 use actix_web::{web, get, post, HttpRequest, HttpResponse, Responder};
 use std::env;
 use crate::handlers::HandlersError;
@@ -60,7 +60,9 @@ async fn login(_req:HttpRequest, _data: web::Json<UserLogin>, _state: web::Data<
                 Ok(token_str) => {
                     let token_cookie = Cookie::build("pharma-token", token_str)
                         .http_only(true)
-                        .max_age(Duration::days(env::var("COOKIE_MAX_AGE").unwrap().parse::<i64>().unwrap()))
+                        .path("/")
+                        .domain("fr.localhost.com")
+                        .expires(OffsetDateTime::now_utc() + Duration::days(15))
                         .finish();
 
                     let mut respond = user_info.respond_to(&_req);
