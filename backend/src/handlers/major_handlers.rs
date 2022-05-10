@@ -2,6 +2,8 @@
 use actix_web::cookie::{Cookie, Expiration};
 use actix_web::cookie::time::{Duration, OffsetDateTime};
 use actix_web::{web, get, post, HttpRequest, HttpResponse, Responder};
+use actix_web::{http::header::HeaderName, http::header::HeaderValue, 
+    http::header};
 use std::env;
 use crate::handlers::HandlersError;
 use crate::models::user::{UserSignup, UserInfo, UserLogin};
@@ -58,15 +60,11 @@ async fn login(_req:HttpRequest, _data: web::Json<UserLogin>, _state: web::Data<
 
             match token{
                 Ok(token_str) => {
-                    let token_cookie = Cookie::build("pharma-token", token_str)
-                        .http_only(true)
-                        .path("/")
-                        .domain("fr.localhost.com")
-                        .expires(OffsetDateTime::now_utc() + Duration::days(15))
-                        .finish();
-
+                    
+                    let name = HeaderName::from_static("pharmacy-token");
+                    let val = HeaderValue::from_str(token_str.as_str()).unwrap();
                     let mut respond = user_info.respond_to(&_req);
-                    respond.add_cookie(&token_cookie);
+                    respond.headers_mut().insert(name, val);
                     respond
                 },
                 Err(err) => {

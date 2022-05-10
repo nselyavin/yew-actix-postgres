@@ -1,15 +1,13 @@
-use cookie::Expiration;
-use cookie::time::OffsetDateTime;
-// use reqwasm::http::{Method, Request};
+use futures::task::LocalSpawn;
+use reqwest::header::HeaderValue;
 use serde::{de::DeserializeOwned, ser::Error};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::{JsValue, JsCast};
-use wasm_cookies::CookieOptions;
+use gloo_storage::{LocalStorage, Storage, errors::StorageError};
 use std::fmt::Debug;
 use std::result;
 use std::result::Result;
 use std::sync::Arc;
-use web_sys::{Request, RequestInit, Response, RequestMode, RequestCredentials};
 
 
 use crate::models::{item::Item, user::*};
@@ -28,66 +26,75 @@ struct Video {
 }
 
 
-async fn new_get_request(url: &str)-> Request
-{
-    Request::new_with_str(format!("http://localhost:8080{}", url).as_str()).unwrap()
-}
-    
-async fn new_request<U>(url: &str, method: &str, body: &U)-> Request
-where     
-    U: Serialize + Debug + ?Sized,
-{
-    let ser_body = serde_json::to_string(body).unwrap();
-    let js_body = wasm_bindgen::JsValue::from_str(ser_body.as_str());
-    let mut opts = web_sys::RequestInit::new();
-    opts.method(method);
-    opts.mode(RequestMode::Cors);
-    opts.credentials(RequestCredentials::SameOrigin);
-    opts.body(Some(&js_body));
-
-    let req = Request::new_with_str_and_init(format!("http://localhost:8080{}", url).as_str(), &opts).unwrap();
-    req
+pub fn get_token()-> Option<String>{
+    let token = LocalStorage::get("pharmacy-token");
+    match token{
+        Ok(tok) => Some(tok),
+        Err(err) => {
+            log::info!("Failed get token: {}", err);
+            None
+        },
+    }
 }
 
+pub fn set_token(token: Option<&HeaderValue>){
+    log::info!("try set token: {:?}", token);
+    if let Some(tok) = token{
+        LocalStorage::set("pharmacy-token", tok.to_str().unwrap()).unwrap();
+    }
+}
 
-async fn request<T, U>(url: &str, method: &str, body: Option<&U>) -> Result<T, u16>
+pub fn remove_token(){
+    LocalStorage::delete("pharmacy-token");
+}
+
+
+async fn request<T, U>(url: &str, method: reqwest::Method, body: Option<&U>) -> Result<T, u16>
 where
 T: DeserializeOwned + Debug + Send,
     U: Serialize + Debug + ?Sized,
 {
-    let mut req = match method{
-        "get" => new_get_request(url).await,
-        "post" => new_request(url, method, &body.unwrap()).await,
-        _ => return Err(404),
-    };
-    req.headers().set("Content-Type", "application/json").unwrap();
-        
-    let window = web_sys::window().unwrap();
-    let resp = wasm_bindgen_futures::JsFuture::from(window.fetch_with_request(&req)).await.unwrap();
-    let resp: Response = resp.dyn_into().unwrap();
-    log::info!("Resp: {:?}", resp.headers().get("set-cookie"));
+    let allow_body = method == reqwest::Method::POST || method == reqwest::Method::PUT;
+    let mut req = reqwest::Client::new()
+        .request(method, format!("http://localhost:8080{}", url))
+        .header("Content-Type", "application/json");
     
-    // if let Some(cook) = resp.headers().get("set-cookie"){
-    //     let token = cookie::Cookie::parse(cook).unwrap(); 
 
-    //     let options = wasm_cookies::CookieOptions{
-    //         path: token.path(),
-    //         domain: token.domain(),
-    //         expires: Some(token.expires_datetime().unwrap().to_string()),
-    //         secure: token.secure().unwrap(),
-    //         same_site: wasm_cookies::SameSite::default(),
-    //     };
+    if let Some(token) = get_token(){
+        req = req.bearer_auth(token);
+    }
 
-    //     log::info!("Try set token: {:?}", token);
-    //     wasm_cookies::set_raw(token.name(), token.value(), &options)
-    // }
-    
-    // match resp.json::<T>().await {
-    //     Ok(val) => Ok(val),
-    //     Err(err) => Err(resp.status()),
-    // }
+    if allow_body{
+        log::info!("Body add");
+        req = req.json(&body.unwrap());
+    }
+    let res_resp = req.send().await;
 
-    Err(100)
+    match res_resp {
+        Ok(resp) => {
+        log::info!("Response: {:?}", resp);
+
+        match resp.status().is_success(){
+            true => {
+                log::info!("Headers: {:?}", resp.headers());
+                set_token(resp.headers().get("pharmacy-token"));
+
+                match resp.json::<T>().await{
+                    Ok(data) => Ok(data),
+                    Err(_) => {
+                        log::info!("Failed parse body");
+                        Err(0)
+                    },
+                }
+            },
+            false => Err(resp.status().as_u16())    
+        }
+    },
+        Err(err) => {
+            log::error!("Failed request: {}", err);
+            Err(0)
+        }
+    }
 }
 
 pub fn GET_items() -> Result<Vec<Item>, u16> {
@@ -110,7 +117,7 @@ pub fn GET_item(id: i64) -> Result<Item, i16> {
 }
 
 pub async fn POST_login(data: &UserLogin) -> Result<UserInfo, u16> {
-    let res = request::<UserInfo, UserLogin>("/login", "post", Some(&data)).await;
+    let res = request::<UserInfo, UserLogin>("/login", reqwest::Method::POST, Some(&data)).await;
     res
 }
 

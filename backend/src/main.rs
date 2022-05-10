@@ -56,6 +56,8 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .app_data(web::Data::new(app_state.to_owned()))
+            .wrap(Logger::new("%{FOO}i"))
+            .wrap(Logger::new("%{FOO}o"))
             .wrap(Logger::default())
             .wrap(cors)
             .service(user_scope())

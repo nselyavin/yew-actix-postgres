@@ -6,7 +6,6 @@ use std::sync::{Mutex, Arc};
 
 use bcrypt::{hash, verify, DEFAULT_COST};
 use log;
-use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
 use validator::*; //{Validate, ValidateArgs, ValidationError, ValidationErrors};
 use wasm_bindgen::JsCast;
