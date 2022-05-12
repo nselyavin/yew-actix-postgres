@@ -22,17 +22,11 @@ pub fn major_scope() -> actix_web::Scope{
 async fn signup(_req: HttpRequest, _data: web::Json<UserSignup>, _state: web::Data<AppState>) -> impl Responder{
     let user_data: UserSignup = _data.into_inner();
     match user_repository::create(&user_data, _state.rb.as_ref(), _state.sflake.as_ref()).await{
-        Some(user) => {
-            let user_info = UserInfo{
-                username: user.username,
-                email: user.email,
-                created_date: user.created_date.to_string(),
-            };
-
-            user_info.respond_to(&_req)
+        Some(_) => {
+            HttpResponse::Ok().finish()
         },
         None => {
-            HttpResponse::BadRequest().finish()
+            HttpResponse::Conflict().finish()
         },
     }    
 }

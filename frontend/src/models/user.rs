@@ -4,6 +4,7 @@ use wasm_bindgen::JsValue;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct UserInfo {
+    pub id: u64,
     pub username: String,
     pub email: String,
     pub created_date: String,
@@ -12,41 +13,55 @@ pub struct UserInfo {
 impl UserInfo {
     pub fn default() -> UserInfo {
         UserInfo {
-            username: "Fume".to_string(),
-            email: "email".to_string(),
-            created_date: "no time".to_string(),
+            id: u64::default(),
+            username: String::default(),
+            email: String::default(),
+            created_date: String::default(),
         }
     }
 }
 
 #[derive(Deserialize, Debug, Clone, Validate, Serialize, PartialEq)]
 pub struct UserLogin {
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = 3))]
     pub password: String,
 }
 
 impl UserLogin {
     pub fn default() -> UserLogin {
         UserLogin {
-            email: "test@test.tu".to_string(),
-            password: "1324".to_string(),
+            email: String::default(),
+            password: String::default(),
         }
     }
 }
 
-#[derive(Deserialize, Debug, Validate, Serialize, PartialEq)]
+#[derive(Deserialize, Debug, Validate, Clone, Serialize, PartialEq)]
 pub struct UserSignup {
-    pub username: String,
+    #[validate(email)]
     pub email: String,
+    pub username: String,
+    #[validate(length(min = 3))]
     pub password: String,
 }
 
 impl UserSignup {
     pub fn default() -> UserSignup {
         UserSignup {
-            username: "test".to_string(),
-            email: "test@test.tu".to_string(),
-            password: "1324".to_string(),
+            username: String::default(),
+            email: String::default(),
+            password: String::default(),
         }
     }
+
+    pub fn is_empty(&self)->bool{
+        !(self.email.len() > 0 && self.username.len() > 0 && self.password.len() > 0)
+    }
+}
+
+#[derive(Deserialize, Debug, Serialize, PartialEq, Clone)]
+pub struct UserToken{
+    pub token: String
 }

@@ -1,177 +1,163 @@
+use std::cell::RefCell;
+use std::rc::{Rc, Weak};
+use std::{sync::{Arc, Mutex}, borrow::BorrowMut};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use log;
 use serde::ser::Error;
 use serde::{Deserialize, Serialize};
+use serde_json::error;
 use validator::*;
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
+use yew::{use_effect, Properties, function_component, use_state, use_mut_ref, use_effect_with_deps, UseStateHandle};
 use yew::{events::Event, html, Callback, Component, Context, NodeRef};
 use yew_router::prelude::*;
 
-use crate::PublicRoute;
+use crate::{PublicRoute, PrivateRoute};
 use crate::models::user::UserSignup;
-use crate::utils::{requests::POST_signup, error_to_str::validErr_to_str};
-
-pub enum SignupMessage {
-    Signup,
-    UpdateField,
-}
-
-enum ErrorType {
-    UnknowUser,
-    BadEmail,
-}
-
-#[derive(Debug, Validate, Deserialize, Serialize)]
-pub struct SignupData {
-    #[validate(email)]
-    email: String,
-    username: String,
-    #[validate(length(min = 8))]
-    password: String,
-}
-
-impl SignupData{
-    pub fn new()->SignupData{
-        SignupData { 
-            email: String::default(), 
-            username: String::default(), 
-            password: String::default() }
-    }
-
-    pub fn is_empty(&self)->bool{
-        !(self.email.len() > 0 && self.username.len() > 0 && self.password.len() > 0)
-    }
-}
-
-pub struct SignupForm {
-    pub is_auth: bool,
-    data: SignupData,
-    error: Option<String>,
-    email: NodeRef,
-    username: NodeRef,
-    password: NodeRef,
-}
-
-impl SignupForm {
-    fn update_field(&mut self, field: &str, target: &Event){
-        let value = target
-                .target()
-                .expect("Event should have a target when dispatched")
-                .unchecked_into::<HtmlInputElement>().value();
-
-        match field {
-            "email" => self.data.email = value.clone(),
-            "username" => self.data.email = value.clone(),
-            _ => (),
-        };
-    }
-}
+use crate::utils::{requests::request_post, error_to_str::validErr_to_str};
 
 
-impl Component for SignupForm {
-    type Message = SignupMessage;
+#[function_component(SignupForm)]
+pub fn signup_form() -> Html{
+    let data_state = use_state(|| UserSignup::default());
+    let email = NodeRef::default();
+    let username = NodeRef::default();
+    let password = NodeRef::default();
+    let error: UseStateHandle<Option<String>> = use_state(|| None);
 
-    type Properties = ();
+    let onclick = {
+        let data_state = data_state.clone();
+        let error = error.clone();
+        
+        Callback::from(move |_|{
+            if data_state.is_empty(){
+                error.set(Some("Fill all fields".to_string()));
+                return;
+            }
 
-    fn create(ctx: &Context<Self>) -> Self {
-        Self {
-            is_auth: false,
-            data: SignupData::new(),
-            error: None,
-            email: NodeRef::default(),
-            username: NodeRef::default(),
-            password: NodeRef::default(),
-        }
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> yew::Html {
-        // On login
-        let onclick = ctx.link().callback(|_| SignupMessage::Signup);
-        html! {
-            <div class="login-form section">
-
-            {
-                if let Some(msg) = &self.error{
-                    html!{
-                        <div class="notification is-danger">
-                            <p>{format!("Error: {}", msg.clone())}</p>
-                        </div>
+            let data_state = data_state.clone();
+            let error = error.clone();
+            wasm_bindgen_futures::spawn_local(async move{
+                let res = request_post::<UserSignup, ()>("/signup", &data_state).await;
+                
+                if let Err(status) = res{
+                    if status == 409{
+                        error.set(Some("User already exists".to_string()));
+                    } else {
+                        error.set(Some("User successfuly created".to_string()));
                     }
-                } else {
-                    html!{}
-                }
+                } 
+            });
+        })
+    };
+
+
+    let onchange_email = {
+        let data_state = data_state.clone();
+        let error = error.clone();
+
+        Callback::from(move |event: Event| {
+            let target: Option<EventTarget> = event.target();
+            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+            let mut data = (*data_state).clone();
+            data.email = input.unwrap().value();
+
+            error.set(None);
+            let res = data.validate();
+            if let Err(errs) = res{
+                error.set(Some(validErr_to_str(&errs)));
             }
+            data_state.set(data);
+        })
+    };
 
+    let onchange_username =  {
+        let data_state = data_state.clone();
+        let error = error.clone();
 
-            <h2 class="title">{"Login"}</h2>
-            <div class="field">
-                <p class="control has-icons-left has-icons-right">
-                        <input class="input" type="email" ref={self.email.clone()} onchange ={ctx.link().callback(|_|{SignupMessage::UpdateField})} placeholder="Email"/>
-                    <span class="icon is-small is-left">
-                        <i class="fas fa-envelope"></i>
-                    </span>
-                </p>
-            </div>
-            <div class="field">
-                <p class="control has-icons-left has-icons-right">
-                    <input class="input" type="text" ref={self.username.clone()} onchange ={ctx.link().callback(|_|{SignupMessage::UpdateField})}  placeholder="Username"/>
-                    <span class="icon is-small is-left">
-                        <i class="fas fa-user"></i>
-                    </span>
-                </p>
-            </div>
-            <div class="field">
-                <p class="control has-icons-left">
-                    <input class="input" type="password" ref={self.password.clone()} onchange ={ctx.link().callback(|_|{SignupMessage::UpdateField})} placeholder="Password"/>
-                    <span class="icon is-small is-left">
-                        <i class="fas fa-lock"></i>
-                    </span>
-                </p>
-            </div>
-            <div class="field">
-                    <p class="control">
-                        <button class="button is-success" {onclick}>
-                        {"Login"}
-                    </button>
-                </p>
-            </div>
-            </div>
+        Callback::from(move |event: Event| {
+            let target: Option<EventTarget> = event.target();
+            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+            let mut data = (*data_state).clone();
+            data.username = input.unwrap().value();
+
+            error.set(None);
+            let res = data.validate();
+            if let Err(errs) = res{
+                error.set(Some(validErr_to_str(&errs)));
+            }
+            data_state.set(data);
+        })
+    };
+
+    let onchange_password =  {
+        let data_state = data_state.clone();
+        let error = error.clone();
+
+        Callback::from(move |event: Event| {
+            let target: Option<EventTarget> = event.target();
+            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+            let mut data = (*data_state).clone();
+            data.password = input.unwrap().value();
+
+            error.set(None);
+            let res = data.validate();
+            if let Err(errs) = res{
+                error.set(Some(validErr_to_str(&errs)));
+            }
+            data_state.set(data);
+        })
+    };
+
+    html! {
+        <div class="login-form section">
+
+        {
+            if let Some(msg) = (*error).clone(){
+                html!{
+                    <div class="notification is-danger">
+                        <p>{format!("Error: {}", msg.clone())}</p>
+                    </div>
+                }
+            } else {
+                html!{}
+            }
         }
-    }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            SignupMessage::Signup => {
-                log::info!("Signup: {:?}", self.data);
 
-                if self.data.is_empty(){
-                    self.error = Some("Fill all fields".to_string());
-                    return true;
-                }
-
-                POST_signup();
-
-                // if let None = self.error{
-                //     let history = ctx.link().history().unwrap();
-                //     history.push(PublicRoute::Login);
-                // }
-                true
-            }
-            SignupMessage::UpdateField => {
-                self.data.email = self.email.cast::<HtmlInputElement>().unwrap().value();
-                self.data.username = self.username.cast::<HtmlInputElement>().unwrap().value();
-                self.data.password = self.password.cast::<HtmlInputElement>().unwrap().value();
-                self.error = None;
-
-                let res = self.data.validate();
-                if let Err(errs) = res{
-                    self.error = Some(validErr_to_str(&errs));
-                }
-
-                false
-            }
-
-        }
+        <h2 class="title">{"Login"}</h2>
+        <div class="field">
+            <p class="control has-icons-left has-icons-right">
+                    <input class="input" type="email" ref={email.clone()} onchange={onchange_email} placeholder="Email"/>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-envelope"></i>
+                </span>
+            </p>
+        </div>
+        <div class="field">
+            <p class="control has-icons-left has-icons-right">
+                <input class="input" type="text" ref={username.clone()} onchange={onchange_username}placeholder="Username"/>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-user"></i>
+                </span>
+            </p>
+        </div>
+        <div class="field">
+            <p class="control has-icons-left">
+                <input class="input" type="password" ref={password.clone()} onchange={onchange_password} placeholder="Password"/>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-lock"></i>
+                </span>
+            </p>
+        </div>
+        <div class="field">
+                <p class="control">
+                    <button class="button is-success" {onclick}>
+                    {"Login"}
+                </button>
+            </p>
+        </div>
+        </div>
     }
 }

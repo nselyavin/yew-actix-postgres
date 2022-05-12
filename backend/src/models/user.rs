@@ -19,6 +19,11 @@ pub struct UserInfo{
     pub created_date: String,
 }
 
+#[derive(Deserialize, Debug, Serialize, PartialEq, Clone)]
+struct UserToken{
+    token: String
+}
+
 #[derive(Deserialize)]
 pub struct UserLogin{
     pub email: String,

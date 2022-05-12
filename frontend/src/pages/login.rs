@@ -15,7 +15,6 @@ use yew::{use_state, UseStateHandle};
 use yew_router::prelude::*;
 
 use crate::models::user::UserLogin;
-use crate::utils::requests::POST_login;
 use crate::PrivateRoute;
 
 pub enum LoginMessage {
@@ -120,9 +119,9 @@ impl Component for LoginForm {
 
                 if let Ok(()) = self.error{
                     wasm_bindgen_futures::spawn_local(async move{
-                        let res = POST_login(&user_data).await;
-                        log::info!("POST_login: {:?}", res);
-                        history.push(PrivateRoute::Store);
+                        // let res = POST_login(&user_data).await;
+                        // log::info!("POST_login: {:?}", res);
+                        history.push(PrivateRoute::Profile);
                     });
                 }
                 

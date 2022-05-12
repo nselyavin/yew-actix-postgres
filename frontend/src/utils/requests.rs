@@ -31,14 +31,13 @@ pub fn get_token()-> Option<String>{
     match token{
         Ok(tok) => Some(tok),
         Err(err) => {
-            log::info!("Failed get token: {}", err);
+            log::info!("Token doesn't exits");
             None
         },
     }
 }
 
 pub fn set_token(token: Option<&HeaderValue>){
-    log::info!("try set token: {:?}", token);
     if let Some(tok) = token{
         LocalStorage::set("pharmacy-token", tok.to_str().unwrap()).unwrap();
     }
@@ -49,10 +48,10 @@ pub fn remove_token(){
 }
 
 
-async fn request<T, U>(url: &str, method: reqwest::Method, body: Option<&U>) -> Result<T, u16>
+async fn request<U, T>(url: &str, method: reqwest::Method, body: &U) -> Result<T, u16>
 where
-T: DeserializeOwned + Debug + Send,
-    U: Serialize + Debug + ?Sized,
+    T: DeserializeOwned + Debug + Send,
+    U: Serialize + Debug ,
 {
     let allow_body = method == reqwest::Method::POST || method == reqwest::Method::PUT;
     let mut req = reqwest::Client::new()
@@ -65,18 +64,18 @@ T: DeserializeOwned + Debug + Send,
     }
 
     if allow_body{
-        log::info!("Body add");
-        req = req.json(&body.unwrap());
+        req = req.json(body);
     }
+
+    log::info!("Request: {:?}", req);
     let res_resp = req.send().await;
+    log::info!("Response: {:?}", res_resp);
 
     match res_resp {
         Ok(resp) => {
-        log::info!("Response: {:?}", resp);
 
         match resp.status().is_success(){
             true => {
-                log::info!("Headers: {:?}", resp.headers());
                 set_token(resp.headers().get("pharmacy-token"));
 
                 match resp.json::<T>().await{
@@ -91,41 +90,40 @@ T: DeserializeOwned + Debug + Send,
         }
     },
         Err(err) => {
-            log::error!("Failed request: {}", err);
             Err(0)
         }
     }
 }
 
-pub fn GET_items() -> Result<Vec<Item>, u16> {
-    let mut items = vec![];
-
-    for i in 0..7 {
-        items.push(Item::new(i));
-    }
-    Ok(items)
+pub async fn request_delete<T>(url: &str) -> Result<T, u16>
+where
+    T: DeserializeOwned + 'static + std::fmt::Debug + Send,
+{
+    request(url, reqwest::Method::DELETE, &()).await
 }
 
-pub fn GET_items_last(amount: i32) -> Result<Vec<Item>, u16> {
-    let mut items = Vec::new();
-
-    Ok(items.to_owned())
+/// Get request
+pub async fn request_get<T>(url: &str) -> Result<T, u16>
+where
+    T: DeserializeOwned + 'static + std::fmt::Debug + Send,
+{
+    request(url, reqwest::Method::GET, &()).await
 }
 
-pub fn GET_item(id: i64) -> Result<Item, i16> {
-    Ok(Item::new(id))
+/// Post request with a body
+pub async fn request_post<U, T>(url: &str, body: &U) -> Result<T, u16>
+where
+    T: DeserializeOwned + 'static + std::fmt::Debug + Send,
+    U: Serialize + std::fmt::Debug,
+{
+    request( url, reqwest::Method::POST, body).await
 }
 
-pub async fn POST_login(data: &UserLogin) -> Result<UserInfo, u16> {
-    let res = request::<UserInfo, UserLogin>("/login", reqwest::Method::POST, Some(&data)).await;
-    res
-}
-
-pub fn POST_signup() -> result::Result<(), u16> {
-    Ok(())
-}
-
-pub fn GET_user_detail() -> result::Result<UserInfo, u16> {
-    // Ok(UserInfo::default())
-    Err(404)
+/// Put request with a body
+pub async fn request_put<U, T>(url: &str, body: &U) -> Result<T, u16>
+where
+    T: DeserializeOwned + 'static + std::fmt::Debug + Send,
+    U: Serialize + std::fmt::Debug,
+{
+    request(url, reqwest::Method::PUT, body).await
 }

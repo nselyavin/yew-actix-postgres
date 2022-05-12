@@ -1,3 +1,4 @@
+use serde::Serialize;
 
 
 pub mod user;
