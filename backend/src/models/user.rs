@@ -14,14 +14,15 @@ pub struct User{
 
 #[derive(Serialize, Deserialize)]
 pub struct UserInfo{
+    pub id: u64,
     pub username: String,
     pub email: String,
     pub created_date: String,
 }
 
 #[derive(Deserialize, Debug, Serialize, PartialEq, Clone)]
-struct UserToken{
-    token: String
+pub struct UserToken{
+    pub token: String
 }
 
 #[derive(Deserialize)]
