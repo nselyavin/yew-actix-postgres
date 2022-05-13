@@ -21,9 +21,6 @@ use crate::utils::{requests::request_post, error_to_str::validErr_to_str};
 #[function_component(SignupForm)]
 pub fn signup_form() -> Html{
     let data_state = use_state(|| UserSignup::default());
-    let email = NodeRef::default();
-    let username = NodeRef::default();
-    let password = NodeRef::default();
     let error: UseStateHandle<Option<String>> = use_state(|| None);
 
     let onclick = {
@@ -129,7 +126,7 @@ pub fn signup_form() -> Html{
         <h2 class="title">{"Login"}</h2>
         <div class="field">
             <p class="control has-icons-left has-icons-right">
-                    <input class="input" type="email" ref={email.clone()} onchange={onchange_email} placeholder="Email"/>
+                    <input class="input" type="email" onchange={onchange_email} placeholder="Email"/>
                 <span class="icon is-small is-left">
                     <i class="fas fa-envelope"></i>
                 </span>
@@ -137,7 +134,7 @@ pub fn signup_form() -> Html{
         </div>
         <div class="field">
             <p class="control has-icons-left has-icons-right">
-                <input class="input" type="text" ref={username.clone()} onchange={onchange_username}placeholder="Username"/>
+                <input class="input" type="text" onchange={onchange_username}placeholder="Username"/>
                 <span class="icon is-small is-left">
                     <i class="fas fa-user"></i>
                 </span>
@@ -145,7 +142,7 @@ pub fn signup_form() -> Html{
         </div>
         <div class="field">
             <p class="control has-icons-left">
-                <input class="input" type="password" ref={password.clone()} onchange={onchange_password} placeholder="Password"/>
+                <input class="input" type="password" onchange={onchange_password} placeholder="Password"/>
                 <span class="icon is-small is-left">
                     <i class="fas fa-lock"></i>
                 </span>

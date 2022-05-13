@@ -37,10 +37,8 @@ pub fn get_token()-> Option<String>{
     }
 }
 
-pub fn set_token(token: Option<&HeaderValue>){
-    if let Some(tok) = token{
-        LocalStorage::set("pharmacy-token", tok.to_str().unwrap()).unwrap();
-    }
+pub fn set_token(token: String){
+    LocalStorage::set("pharmacy-token", token).unwrap();
 }
 
 pub fn remove_token(){
@@ -76,8 +74,6 @@ where
 
         match resp.status().is_success(){
             true => {
-                set_token(resp.headers().get("pharmacy-token"));
-
                 match resp.json::<T>().await{
                     Ok(data) => Ok(data),
                     Err(_) => {

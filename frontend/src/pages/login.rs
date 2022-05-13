@@ -41,6 +41,7 @@ pub fn login_form() -> Html{
 
                 if let Ok(token) = res{
                     set_token(token.token);
+                    log::info!("history push");
                     history.push(PrivateRoute::Profile);
                 } 
             });

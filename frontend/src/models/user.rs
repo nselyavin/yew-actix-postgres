@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 use wasm_bindgen::JsValue;
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Default)]
 pub struct UserInfo {
     pub id: u64,
     pub username: String,
@@ -10,16 +10,16 @@ pub struct UserInfo {
     pub created_date: String,
 }
 
-impl UserInfo {
-    pub fn default() -> UserInfo {
-        UserInfo {
-            id: u64::default(),
-            username: String::default(),
-            email: String::default(),
-            created_date: String::default(),
-        }
-    }
-}
+// impl UserInfo {
+//     pub fn default() -> UserInfo {
+//         UserInfo {
+//             id: u64::default(),
+//             username: String::default(),
+//             email: String::default(),
+//             created_date: String::default(),
+//         }
+//     }
+// }
 
 #[derive(Deserialize, Debug, Clone, Validate, Serialize, PartialEq)]
 pub struct UserLogin {
@@ -35,6 +35,10 @@ impl UserLogin {
             email: String::default(),
             password: String::default(),
         }
+    }
+
+    pub fn is_empty(&self)->bool{
+        !(self.email.len() > 0 && self.password.len() > 0)
     }
 }
 
