@@ -11,75 +11,74 @@ use validator::*; //{Validate, ValidateArgs, ValidationError, ValidationErrors};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Callback, Component, Context, NodeRef};
-use yew::{use_state, UseStateHandle};
+use yew::{use_state, UseStateHandle, function_component};
 use yew_router::prelude::*;
 
-use crate::models::user::UserLogin;
+use crate::models::user::{UserLogin, UserToken};
 use crate::PrivateRoute;
+use crate::utils::error_to_str::validErr_to_str;
+use crate::utils::requests::{request_post, set_token};
 
-pub enum LoginMessage {
-    Login,
-    ChangeEmail(String),
-    ChangePassword(String),
-}
 
-enum ErrorType {
-    UnknowUser,
-    BadEmail,
-}
+#[function_component(LoginForm)]
+pub fn login_form() -> Html{
+    let data_state = use_state(|| UserLogin::default());
 
-pub struct LoginForm {
-    pub is_auth: bool,
-    // TODO переписать как у signup
-    data: UserLogin,
-    error: Result<(), ValidationErrors>,
-}
-
-impl Component for LoginForm {
-    type Message = LoginMessage;
-
-    type Properties = ();
-
-    fn create(ctx: &Context<Self>) -> Self {
-        Self {
-            is_auth: false,
-            data: UserLogin::default(),
-            error: Ok(()),
-        }
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> yew::Html {
-        // On login
-        let onclick = ctx.link().callback_once(|_| LoginMessage::Login);
-        // On email change
-        let on_email_change = ctx.link().callback(|e: Event| {
-            let target: EventTarget = e
-                .target()
-                .expect("Event should have a target when dispatched");
-            LoginMessage::ChangeEmail(target.unchecked_into::<HtmlInputElement>().value())
-        });
-        // On pass change
-        let on_password_change = ctx.link().callback(|e: Event| {
-            let target: EventTarget = e
-                .target()
-                .expect("Event should have a target when dispatched");
-            LoginMessage::ChangePassword(target.unchecked_into::<HtmlInputElement>().value())
-        });
-
-        html! {
-            <div class="login-form section">
-            {
-                // TODO: нахуй этот метод
-                if let Err(e) = &self.error{
-                    html!{ for e.field_errors().into_iter().map(|(a, b)|{format!("{:?}", b)})}
-                }else{
-                    html!{}
-                }
+    let history = use_history().unwrap();
+    let onclick = {
+        let data_state = data_state.clone();
+        
+        Callback::once(move |_|{
+            if data_state.is_empty(){
+                return;
             }
+
+            let data_state = data_state.clone();
+            wasm_bindgen_futures::spawn_local(async move{
+                let res = request_post::<UserLogin, UserToken>("/login", &data_state).await;
+                
+                log::info!("Token: {:?}", res);
+
+                if let Ok(token) = res{
+                    set_token(token.token);
+                    history.push(PrivateRoute::Profile);
+                } 
+            });
+        })
+    };
+
+
+    let onchange_email = {
+        let data_state = data_state.clone();
+
+        Callback::from(move |event: Event| {
+            let target: Option<EventTarget> = event.target();
+            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+            let mut data = (*data_state).clone();
+            data.email = input.unwrap().value();
+            data_state.set(data);
+        })
+    };
+
+    let onchange_password =  {
+        let data_state = data_state.clone();
+
+        Callback::from(move |event: Event| {
+            let target: Option<EventTarget> = event.target();
+            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+            let mut data = (*data_state).clone();
+            data.password = input.unwrap().value();
+
+            data_state.set(data);
+        })
+    };
+
+    html! {
+        <div class="login-form section">
             <h2 class="title">{"Login"}</h2>
             <div class="field">
                     <p class="control has-icons-left has-icons-right">
-                        <input class="input" type="email" onchange={on_email_change} placeholder="Email"/>
+                        <input class="input" type="email" onchange={onchange_email} placeholder="Email"/>
                         <span class="icon is-small is-left">
                         <i class="fas fa-envelope"></i>
                         </span>
@@ -90,7 +89,7 @@ impl Component for LoginForm {
                     </div>
                     <div class="field">
                     <p class="control has-icons-left">
-                        <input class="input" type="password" onchange={on_password_change} placeholder="Password"/>
+                        <input class="input" type="password" onchange={onchange_password} placeholder="Password"/>
                         <span class="icon is-small is-left">
                         <i class="fas fa-lock"></i>
                         </span>
@@ -103,41 +102,6 @@ impl Component for LoginForm {
                         </button>
                     </p>
                 </div>
-
-            </div>
-        }
-    }
-
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            LoginMessage::Login => {
-                log::info!("Login");
-                self.error = self.data.validate();
-                
-                let user_data= self.data.clone();
-                let history = ctx.link().history().unwrap();
-
-                if let Ok(()) = self.error{
-                    wasm_bindgen_futures::spawn_local(async move{
-                        // let res = POST_login(&user_data).await;
-                        // log::info!("POST_login: {:?}", res);
-                        history.push(PrivateRoute::Profile);
-                    });
-                }
-                
-                false
-            }
-            LoginMessage::ChangeEmail(val) => {
-                // TODO: попробовать статичные функции
-                log::info!("email: {}", val);
-                self.data.email = val.clone();
-                false
-            }
-            LoginMessage::ChangePassword(val) => {
-                log::info!("password: {}", val);
-                self.data.password = val.clone();
-                false
-            }
-        }
+        </div>
     }
 }
