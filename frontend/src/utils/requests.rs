@@ -10,7 +10,7 @@ use std::result::Result;
 use std::sync::Arc;
 
 
-use crate::models::{item::Item, user::*};
+use crate::models::{medicines::MedicineInfo, user::*};
 
 struct ReqResult<T> {
     code: Arc<u16>,
@@ -46,7 +46,7 @@ pub fn remove_token(){
 }
 
 
-async fn request<U, T>(url: &str, method: reqwest::Method, body: &U) -> Result<T, u16>
+async fn request<U, T>(url: String, method: reqwest::Method, body: &U) -> Result<T, u16>
 where
     T: DeserializeOwned + Debug + Send,
     U: Serialize + Debug ,
@@ -91,7 +91,7 @@ where
     }
 }
 
-pub async fn request_delete<T>(url: &str) -> Result<T, u16>
+pub async fn request_delete<T>(url: String) -> Result<T, u16>
 where
     T: DeserializeOwned + 'static + std::fmt::Debug + Send,
 {
@@ -99,7 +99,7 @@ where
 }
 
 /// Get request
-pub async fn request_get<T>(url: &str) -> Result<T, u16>
+pub async fn request_get<T>(url: String) -> Result<T, u16>
 where
     T: DeserializeOwned + 'static + std::fmt::Debug + Send,
 {
@@ -107,16 +107,16 @@ where
 }
 
 /// Post request with a body
-pub async fn request_post<U, T>(url: &str, body: &U) -> Result<T, u16>
+pub async fn request_post<U, T>(url: String, body: &U) -> Result<T, u16>
 where
     T: DeserializeOwned + 'static + std::fmt::Debug + Send,
     U: Serialize + std::fmt::Debug,
 {
-    request( url, reqwest::Method::POST, body).await
+    request(url, reqwest::Method::POST, body).await
 }
 
 /// Put request with a body
-pub async fn request_put<U, T>(url: &str, body: &U) -> Result<T, u16>
+pub async fn request_put<U, T>(url: String, body: &U) -> Result<T, u16>
 where
     T: DeserializeOwned + 'static + std::fmt::Debug + Send,
     U: Serialize + std::fmt::Debug,

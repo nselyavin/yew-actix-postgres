@@ -19,10 +19,12 @@ use utils::requests::*;
 pub enum PrivateRoute {
     #[at("/")]
     Search,
-    #[at("/detail/:id")]
+    #[at("/info/:id")]
     Detail { id: String},
     #[at("/profile")]
     Profile,
+    #[at("/medicine/new")]
+    NewMedicine,
     #[at("/logout")]
     Logout,
     #[not_found]
@@ -34,7 +36,7 @@ pub enum PrivateRoute {
 enum PublicRoute {
     #[at("/")]
     Search,
-    #[at("/detail/:id")]
+    #[at("/info/:id")]
     Detail { id: String},
     #[at("/login")]
     Login,
@@ -51,27 +53,28 @@ fn public_switch(route: &PublicRoute) -> Html {
         PublicRoute::Login => html! {<login::LoginForm/>},
         PublicRoute::Signup => html! {<signup::SignupForm/>},
         PublicRoute::NotFound => html! {<Redirect<PublicRoute> to={PublicRoute::Login}/>},
-        PublicRoute::Detail { id } => html! {<detail::Detail id={(*id).clone()}/>},
+        PublicRoute::Detail { id } => html! {<info::Info id={(*id).clone()}/>},
     }
 }
 
 fn private_switch(route: &PrivateRoute) -> Html {
     match route {
-        PrivateRoute::Detail { id } => html! {<detail::Detail id={(*id).clone()}/>},
+        PrivateRoute::Detail { id } => html! {<info::Info id={(*id).clone()}/>},
         PrivateRoute::Profile => html! {"Profile"},
         PrivateRoute::Logout => {
             remove_token();
-            html!{<Redirect<PublicRoute> to={PublicRoute::Login}/>}
+            html!{<Redirect<PrivateRoute> to={PrivateRoute::Search}/>}
         }
         PrivateRoute::NotFound => html! {<NotFound/>},
         PrivateRoute::Search => html!{<search::Search/>},
+        PrivateRoute::NewMedicine => html!{<new_medicine::NewMedicine/>},
     }
 }
 
 #[function_component(App)]
 fn app() -> Html {
     let user_ctx = use_state(|| Some(UserInfo::default()));
-    let current_user = use_async(async move { request_get::<UserInfo>("/user/detail").await });
+    let current_user = use_async(async move { request_get::<UserInfo>("/user/detail".to_string()).await });
 
     {
         let current_user = current_user.clone();

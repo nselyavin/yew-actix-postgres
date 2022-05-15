@@ -13,12 +13,18 @@ pub fn search() -> Html {
     let pharm_id = use_state(|| String::default());
     let history = use_history().unwrap();
 
-    let onclick = Callback::once(
+    let onclick = {
+        let pharm_id = pharm_id.clone();
+        Callback::once(
         move |_| {    
-            history.push(PrivateRoute::Detail { id: "asd".to_string() })
-            
-        }
-    );
+            log::info!("Len: {}", pharm_id.len());
+            if pharm_id.len() == 0{
+                history.push(PrivateRoute::Detail { id: "0".to_string()})
+            } else {
+                history.push(PrivateRoute::Detail { id: (*pharm_id).clone()})
+            }
+        })
+    };
 
     let onchange = {
         let pharm_id = pharm_id.clone();        
@@ -40,7 +46,7 @@ pub fn search() -> Html {
             <h2>{"Enter ID of your pharmacy product"}</h2>
             <div class="field has-addons">
                 <div class="control is-expanded">
-                    <input class="input" type="text" {onchange} placeholder="pharmacy id"/>
+                    <input class="input" name="search" type="text" {onchange} placeholder="pharmacy id" />
                 </div>
                 <div class="control">
                     <button class="button is-info" {onclick}>

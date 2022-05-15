@@ -1,4 +1,4 @@
 use serde::Serialize;
 
-pub mod item;
+pub mod medicines;
 pub mod user;

@@ -1,85 +1,103 @@
-
-use std::cell::RefCell;
-use std::ops::Deref;
-use std::rc::Rc;
-use std::sync::{Mutex, Arc};
-
-use bcrypt::{hash, verify, DEFAULT_COST};
 use log;
-use serde::{Deserialize, Serialize};
-use validator::*; //{Validate, ValidateArgs, ValidationError, ValidationErrors};
 use wasm_bindgen::JsCast;
-use web_sys::{EventTarget, HtmlInputElement};
-use yew::{events::Event, html, Callback, Component, Context, NodeRef};
-use yew::{use_state, UseStateHandle, function_component};
+use web_sys::{EventTarget, HtmlInputElement, InputEvent, MouseEvent};
+use yew::{function_component, use_effect_with_deps, use_mut_ref, use_state};
+use yew::{html, Callback};
+use yew_hooks::use_async;
 use yew_router::prelude::*;
 
 use crate::models::user::{UserLogin, UserToken};
-use crate::PrivateRoute;
-use crate::utils::error_to_str::validErr_to_str;
 use crate::utils::requests::{request_post, set_token};
-
+use crate::PrivateRoute;
 
 #[function_component(LoginForm)]
-pub fn login_form() -> Html{
-    let data_state = use_state(|| UserLogin::default());
+pub fn login_form() -> Html {
+    let data_state = use_mut_ref(|| UserLogin::default());
+    let error = use_state::<Option<String>, _>(|| None);
+    let user_login = use_async({
+        let data_state = data_state.clone();
+        async move {
+            log::info!("data_state: {:?}", &*data_state.borrow_mut());
+            request_post::<UserLogin, UserToken>("/login".to_string(), &*data_state.borrow_mut())
+                .await
+        }
+    });
 
     let history = use_history().unwrap();
-    let onclick = {
-        let data_state = data_state.clone();
-        
-        Callback::once(move |_|{
-            if data_state.is_empty(){
-                return;
-            }
-
-            let data_state = data_state.clone();
-            wasm_bindgen_futures::spawn_local(async move{
-                let res = request_post::<UserLogin, UserToken>("/login", &data_state).await;
-                
-                log::info!("Token: {:?}", res);
-
-                if let Ok(token) = res{
-                    set_token(token.token);
+    {
+        let error = error.clone();
+        use_effect_with_deps(
+            move |user_login| {
+                if let Some(user_token) = &user_login.data {
+                    set_token(user_token.token.clone());
                     log::info!("history push");
                     history.push(PrivateRoute::Profile);
-                } 
-            });
-        })
-    };
+                }
 
+                if let Some(_) = &user_login.error {
+                    log::info!("Failed to auth");
+                    error.set(Some("Failed to auth".to_string()));
+                }
+                || ()
+            },
+            user_login.clone(),
+        );
+    }
 
-    let onchange_email = {
+    let change_email = {
         let data_state = data_state.clone();
 
-        Callback::from(move |event: Event| {
+        Callback::from(move |event: InputEvent| {
             let target: Option<EventTarget> = event.target();
             let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
             let mut data = (*data_state).clone();
-            data.email = input.unwrap().value();
-            data_state.set(data);
+            (*data.borrow_mut()).email = input.unwrap().value();
+            *data_state.borrow_mut() = (*data.borrow_mut()).clone();
         })
     };
 
-    let onchange_password =  {
+    let change_password = {
         let data_state = data_state.clone();
 
-        Callback::from(move |event: Event| {
+        Callback::from(move |event: InputEvent| {
             let target: Option<EventTarget> = event.target();
             let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
             let mut data = (*data_state).clone();
-            data.password = input.unwrap().value();
+            (*data.borrow_mut()).password = input.unwrap().value();
+            *data_state.borrow_mut() = (*data.borrow_mut()).clone();
+        })
+    };
 
-            data_state.set(data);
+    let onclick = {
+        let data_state = data_state.clone();
+
+        Callback::once(move |e: MouseEvent| {
+            if (*data_state.borrow_mut()).is_empty() {
+                return;
+            }
+            user_login.run();
         })
     };
 
     html! {
         <div class="login-form section">
+        {
+            if let Some(msg) = &*error{
+                html!{
+                    <div class="notification is-danger">
+                        <p>{format!("Error: {}", msg.clone())}</p>
+                    </div>
+                }
+            } else {
+                html!{}
+            }
+        }
+
+
             <h2 class="title">{"Login"}</h2>
             <div class="field">
                     <p class="control has-icons-left has-icons-right">
-                        <input class="input" type="email" onchange={onchange_email} placeholder="Email"/>
+                        <input class="input" name="email" type="email" oninput={change_email} placeholder="Email"/>
                         <span class="icon is-small is-left">
                         <i class="fas fa-envelope"></i>
                         </span>
@@ -90,7 +108,7 @@ pub fn login_form() -> Html{
                     </div>
                     <div class="field">
                     <p class="control has-icons-left">
-                        <input class="input" type="password" onchange={onchange_password} placeholder="Password"/>
+                        <input class="input" name="password" type="password" oninput={change_password} placeholder="Password"/>
                         <span class="icon is-small is-left">
                         <i class="fas fa-lock"></i>
                         </span>

@@ -18,9 +18,12 @@ main {
 }
 
 .login-form{
-    width: 400px;
+    max-width: 400px;
 }
 
+.medicine-info{
+    max-width: 900px;
+}
 
 .scale :hover{
     transition: .2s;

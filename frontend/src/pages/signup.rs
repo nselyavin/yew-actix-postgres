@@ -36,7 +36,7 @@ pub fn signup_form() -> Html{
             let data_state = data_state.clone();
             let error = error.clone();
             wasm_bindgen_futures::spawn_local(async move{
-                let res = request_post::<UserSignup, ()>("/signup", &data_state).await;
+                let res = request_post::<UserSignup, ()>("/signup".to_string(), &data_state).await;
                 
                 if let Err(status) = res{
                     if status == 409{
@@ -123,38 +123,38 @@ pub fn signup_form() -> Html{
         }
 
 
-        <h2 class="title">{"Login"}</h2>
-        <div class="field">
-            <p class="control has-icons-left has-icons-right">
-                    <input class="input" type="email" onchange={onchange_email} placeholder="Email"/>
-                <span class="icon is-small is-left">
-                    <i class="fas fa-envelope"></i>
-                </span>
-            </p>
-        </div>
-        <div class="field">
-            <p class="control has-icons-left has-icons-right">
-                <input class="input" type="text" onchange={onchange_username}placeholder="Username"/>
-                <span class="icon is-small is-left">
-                    <i class="fas fa-user"></i>
-                </span>
-            </p>
-        </div>
-        <div class="field">
-            <p class="control has-icons-left">
-                <input class="input" type="password" onchange={onchange_password} placeholder="Password"/>
-                <span class="icon is-small is-left">
-                    <i class="fas fa-lock"></i>
-                </span>
-            </p>
-        </div>
-        <div class="field">
-                <p class="control">
-                    <button class="button is-success" {onclick}>
-                    {"Login"}
-                </button>
-            </p>
-        </div>
+            <h2 class="title">{"Signup"}</h2>
+            <div class="field">
+                <p class="control has-icons-left has-icons-right">
+                        <input class="input" name="email" type="email" onchange={onchange_email} placeholder="Email"/>
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                </p>
+            </div>
+            <div class="field">
+                <p class="control has-icons-left has-icons-right">
+                    <input class="input" name="nickname" type="text" onchange={onchange_username}placeholder="Username"/>
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-user"></i>
+                    </span>
+                </p>
+            </div>
+            <div class="field">
+                <p class="control has-icons-left">
+                    <input class="input" name="password" type="password" onchange={onchange_password} placeholder="Password"/>
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                </p>
+            </div>
+            <div class="field">
+                    <p class="control">
+                        <button class="button is-success" {onclick}>
+                        {"Login"}
+                    </button>
+                </p>
+            </div>
         </div>
     }
 }

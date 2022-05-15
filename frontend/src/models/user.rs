@@ -10,17 +10,6 @@ pub struct UserInfo {
     pub created_date: String,
 }
 
-// impl UserInfo {
-//     pub fn default() -> UserInfo {
-//         UserInfo {
-//             id: u64::default(),
-//             username: String::default(),
-//             email: String::default(),
-//             created_date: String::default(),
-//         }
-//     }
-// }
-
 #[derive(Deserialize, Debug, Clone, Validate, Serialize, PartialEq)]
 pub struct UserLogin {
     #[validate(email)]
