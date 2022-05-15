@@ -14,3 +14,12 @@ CREATE TABLE IF NOT EXISTS t_user (
 INSERT INTO t_user(id, username, email, created_date, password)
 VALUES (1, 'fume', 'test@test.ru', current_timestamp, '$2y$08$a2eRpoUeJxoDc2lPyEuEEu3wvvIgi6CAV33b/Eua2yCyGoAFnhLia')
 ON CONFLICT DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS medicine (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    creator_name TEXT NOT NULL,
+    cost REAL DEFAULT 0,
+    description TEXT,
+    created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

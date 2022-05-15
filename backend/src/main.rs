@@ -17,6 +17,8 @@ mod config;
 use handlers::user_handlers::user_scope;
 use handlers::major_handlers::major_scope;
 use rbatis::{rbatis::Rbatis, plugin::snowflake::Snowflake};
+
+use crate::handlers::medicine_handlers::medicine_scope;
 //use handlers::medicine_handlers::medicine_scope;
 
 #[derive(Clone)]
@@ -61,6 +63,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .wrap(cors)
             .service(user_scope())
+            .service(medicine_scope())
             .service(major_scope())
     })
     .bind("127.0.0.1:8080")?

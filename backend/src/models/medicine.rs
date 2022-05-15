@@ -6,14 +6,17 @@ use super::user::User;
 #[crud_table(table_name: medicine)]
 #[derive(Serialize, Deserialize)]
 pub struct Medicine{
-    id: String,
-    user_id: u64,
-    name: String,
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub cost: f32,
+    pub creator_name: String,
+    pub created_date: DateTimeNative,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct MedicineInfo{
-    id: String,
-    user_name: String,
-    name: String,
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Default)]
+pub struct MedicineReg{
+    pub name: String,
+    pub description: String,
+    pub cost: f32
 }
