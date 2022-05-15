@@ -13,7 +13,7 @@ pub fn detail(props: &DetailProps)->Html{
     html!{
         <div class="container">
             <h1 class="title">{"Item name"}</h1>
-            <img src="" alt="detail"/>
+            <img class="image is-256x256 noscale" src="public/default.jpg" alt="defualt"/>
             <p>{"description"}</p>
             
             {props.id.clone()}

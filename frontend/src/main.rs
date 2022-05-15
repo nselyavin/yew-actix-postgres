@@ -19,7 +19,7 @@ use utils::requests::*;
 pub enum PrivateRoute {
     #[at("/")]
     Search,
-    #[at("/:id")]
+    #[at("/detail/:id")]
     Detail { id: String},
     #[at("/profile")]
     Profile,
@@ -34,6 +34,8 @@ pub enum PrivateRoute {
 enum PublicRoute {
     #[at("/")]
     Search,
+    #[at("/detail/:id")]
+    Detail { id: String},
     #[at("/login")]
     Login,
     #[at("/signup")]
@@ -49,6 +51,7 @@ fn public_switch(route: &PublicRoute) -> Html {
         PublicRoute::Login => html! {<login::LoginForm/>},
         PublicRoute::Signup => html! {<signup::SignupForm/>},
         PublicRoute::NotFound => html! {<Redirect<PublicRoute> to={PublicRoute::Login}/>},
+        PublicRoute::Detail { id } => html! {<detail::Detail id={(*id).clone()}/>},
     }
 }
 
