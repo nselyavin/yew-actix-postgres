@@ -17,8 +17,10 @@ use utils::requests::*;
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum PrivateRoute {
+    #[at("/")]
+    Search,
     #[at("/:id")]
-    Detail { id: i64 },
+    Detail { id: String},
     #[at("/profile")]
     Profile,
     #[at("/logout")]
@@ -43,7 +45,7 @@ enum PublicRoute {
 
 fn public_switch(route: &PublicRoute) -> Html {
     match route {
-        PublicRoute::Search => html! {},
+        PublicRoute::Search => html! {<search::Search/>},
         PublicRoute::Login => html! {<login::LoginForm/>},
         PublicRoute::Signup => html! {<signup::SignupForm/>},
         PublicRoute::NotFound => html! {<Redirect<PublicRoute> to={PublicRoute::Login}/>},
@@ -52,13 +54,14 @@ fn public_switch(route: &PublicRoute) -> Html {
 
 fn private_switch(route: &PrivateRoute) -> Html {
     match route {
-        PrivateRoute::Detail { id } => html! {<detail::Detail id={*id}/>},
+        PrivateRoute::Detail { id } => html! {<detail::Detail id={(*id).clone()}/>},
         PrivateRoute::Profile => html! {"Profile"},
         PrivateRoute::Logout => {
             remove_token();
             html!{<Redirect<PublicRoute> to={PublicRoute::Login}/>}
         }
         PrivateRoute::NotFound => html! {<NotFound/>},
+        PrivateRoute::Search => html!{<search::Search/>},
     }
 }
 
