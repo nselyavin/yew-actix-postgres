@@ -31,9 +31,6 @@ ____
 | POST          | /signup          |         User Signup||
 | POST          | /login           |         User Login||
 | GET           | /info            |     Get detail of medicine by  his id||
-~~| GET           | /users           |          Get all users| * |~~
 | GET           | /users/detail    |          Get current user detail| * |
-~~| GET           | /users/{id}      |         Get user by id| * |~~
 | POST          | /medicines/new   |        Reg new medicine| * |
-~~| GET           | /medicines       |        Get list medicines of company| * |~~
-~~| DELETE        | /medicines/delete|        Get list medicines of company| * |~~
+
