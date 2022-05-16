@@ -21,9 +21,12 @@ backed:
 frontend:
 ```
   cd frontend
-  trunk serve
+  trunk serve --port 3000
 ```
 ____
+## Frontend url
+##### localhost:3000
+
 ## Backend Api
 ##### localhost:8080/app/
 | Type          | Request          | Description   |Auth |  
