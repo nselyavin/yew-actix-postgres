@@ -13,7 +13,18 @@ To start the application Rust compiler and Cargo build manager must be installed
   cd pharmacy-app
 ```
 ## Deploy
-backed:
+
+The server requires a running PostgreSQL server. The backend/migration folder contains up.sql file, that setup database
+```
+  psql -U postgres -f up.sql
+```
+It also create a test user:\
+name:     test\
+email:    test@test.ru\
+password: 1324
+
+In the .env file you can point database_url "postgres://user:password@localhost:5432/pharmacy"\
+Start backend server:
 ```
   cd backend
   cargo run --bin backend 
@@ -24,16 +35,114 @@ frontend:
   trunk serve --port 3000
 ```
 ____
-## Frontend url
-##### localhost:3000
+## Frontend uri
+##### http://localhost:3000
 
 ## Backend Api
-##### localhost:8080/app/
-| Type          | Request          | Description   |Auth |  
-|:------------- |:-----------------| -------------:|-------------:|
-| POST          | /signup          |         User Signup||
-| POST          | /login           |         User Login||
-| GET           | /info            |     Get detail of medicine by  his id||
-| GET           | /users/detail    |          Get current user detail| * |
-| POST          | /medicines/new   |        Reg new medicine| * |
+##### http://localhost:8080/app/
+### ***REST API documentation:***
+### */info/{id}
+
+
+
+***Endpoint:***
+
+```bash
+Method: GET
+Type: 
+URL: localhost:8080/info/b49fbf88-43ea-4aaa-bb2e-74897979d013
+```
+
+
+
+### */login
+
+
+
+***Endpoint:***
+
+```bash
+Method: POST
+Type: RAW
+URL: localhost:8080/login
+```
+
+
+
+***Body:***
+
+```js        
+{
+    "email": "nselyavin@inbox.ru",
+    "password": "1234"
+}
+```
+
+
+
+### */signup
+
+
+
+***Endpoint:***
+
+```bash
+Method: POST
+Type: RAW
+URL: localhost:8080/signup
+```
+
+
+
+***Body:***
+
+```js        
+{
+    "email": "test1234@test.ru",
+    "username": "testn123ame",
+    "password": "1324"
+}
+```
+
+
+### */medicine/new
+
+
+
+***Endpoint:***
+
+```bash
+Method: POST
+Type: RAW
+URL: localhost:8080/medicine/new
+```
+
+
+
+***Body:***
+
+```js        
+{
+    "name": "name",
+    "description": "description",
+    "cost": 1000.1
+}
+
+```
+
+
+### */user/detail
+
+
+
+***Endpoint:***
+
+```bash
+Method: GET
+Type: 
+URL: localhost:8080/user/detail
+```
+
+
+
 
