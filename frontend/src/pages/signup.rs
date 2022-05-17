@@ -13,7 +13,7 @@ use yew::{use_effect, Properties, function_component, use_state, use_mut_ref, us
 use yew::{events::Event, html, Callback, Component, Context, NodeRef};
 use yew_router::prelude::*;
 
-use crate::{PublicRoute, PrivateRoute};
+use crate::{PrivateRoute};
 use crate::models::user::UserSignup;
 use crate::utils::{requests::request_post, error_to_str::validErr_to_str};
 

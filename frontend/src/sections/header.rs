@@ -1,11 +1,13 @@
 use log::debug;
-use yew::{function_component, html, use_context, Callback, Component, Context, Properties, classes, use_state, use_effect_with_deps, callback};
+use yew::{function_component, html, use_context, Callback, Component, Context, Properties, classes, use_state, use_effect_with_deps, callback, UseStateHandle};
+use yew_router::{hooks::use_history, history::History};
 
-use crate::models::{self, user::UserInfo};
+use crate::{models::{self, user::UserInfo}, utils::requests::{get_token, remove_token}, PrivateRoute};
 
 #[function_component(Header)]
 pub fn header() -> Html {
-    let opt_user = use_context::<models::user::UserInfo>();
+    let user_ctx = use_context::<Option<UserInfo>>().unwrap();
+    let logout_ctx = use_state(|| false);
     let nav_classes = use_state(||Some("navbar-menu"));
 
     let onclick = {
@@ -20,11 +22,18 @@ pub fn header() -> Html {
         })
     };
 
+
+    let onclick_logout = Callback::once(move |_|{
+        logout_ctx.set(true);
+        remove_token();
+        use_history().unwrap().push(PrivateRoute::Login);
+    });
+
     html! {
         <nav class="navbar" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
                 <a class="navbar-item" href="/">
-                    <img src="public/logo.png" width="120" height="30"/>
+                    <img src="/public/logo.png" width="120" height="30"/>
                 </a>
                 <a role="button" class="navbar-burger" {onclick} aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
                     <span aria-hidden="true"></span>
@@ -40,8 +49,8 @@ pub fn header() -> Html {
                 </div>
                     
             {
-            match opt_user{
-                None => {
+            match get_token().is_some(){
+                false => {
                     html!{
                         <div class="navbar-item">
                             <div class="buttons">
@@ -55,24 +64,27 @@ pub fn header() -> Html {
                         </div>
                     }
                 },
-                Some(user) => {
+                true => {
                     html!{
                         <div class="navbar-item has-dropdown is-hoverable">
                             <a class="navbar-link">
-                                {user.username.clone()}
+                                {user_ctx.unwrap().username.clone()}
                             </a>
 
                             <div class="navbar-dropdown">
-                                <a class="navbar-item" href="/profile">
-                                    {"Profile"}
-                                </a>
-                                <a class="navbar-item" href="/contact">
-                                    {"Contact"}
+                            <a class="navbar-item" href="/profile">
+                            {"Profile"}
+                            </a>
+                            <a class="navbar-item" href="/medicine/new">
+                                {"New medicine"}
+                            </a>
+                            <a class="navbar-item" href="/contact">
+                            {"Contact"}
                                 </a>
                                 <hr class="navbar-divider"/>
-                                <a class="navbar-item" href="/logout">
+                                <button class="navbar-item button is-danger is-inverted" onclick={onclick_logout}>
                                     {"Logout"}
-                                </a>
+                                </button>
                             </div>
                         </div>
 

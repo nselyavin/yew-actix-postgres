@@ -6,7 +6,7 @@ use yew::{function_component, events::Event, html, Callback, use_state};
 use yew_hooks::{use_async_with_options, use_async};
 use yew_router::{hooks::use_history, history::History};
 
-use crate::{PublicRoute, PrivateRoute};
+use crate::{PrivateRoute};
 
 #[function_component(Search)]
 pub fn search() -> Html {
