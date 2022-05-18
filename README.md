@@ -39,7 +39,7 @@ ____
 ##### http://localhost:3000
 
 ## Backend Api
-##### http://localhost:8080/app/
+##### http://localhost:8080/
 ### ***REST API documentation:***
 ### */info/{id}
 
