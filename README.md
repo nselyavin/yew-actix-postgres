@@ -39,7 +39,7 @@ ____
 ##### http://localhost:3000
 
 ## Backend Api
-##### http://localhost:8080/app/
+##### http://localhost:8080/
 ### ***REST API documentation:***
 ### */info/{id}
 
@@ -115,6 +115,7 @@ URL: localhost:8080/signup
 Method: POST
 Type: RAW
 URL: localhost:8080/medicine/new
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NjI1MzE5ODUwMzczNzE2Nzg3MiwiZXhwIjoxNjUzOTExODI2fQ.UnkhAp5_jEEW52jUs_opnsAH8YoGPX7-UXjC4YZTkC8
 ```
 
 
@@ -141,6 +142,7 @@ URL: localhost:8080/medicine/new
 Method: GET
 Type: 
 URL: localhost:8080/user/detail
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NjI1MzE5ODUwMzczNzE2Nzg3MiwiZXhwIjoxNjUzOTExODI2fQ.UnkhAp5_jEEW52jUs_opnsAH8YoGPX7-UXjC4YZTkC8
 ```
 
 
