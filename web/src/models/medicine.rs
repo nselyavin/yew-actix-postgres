@@ -1,7 +1,7 @@
 use rbatis::{crud_table, DateTimeNative};
 use serde::{Serialize, Deserialize};
 
-use super::user::User;
+// use super::user::User;
 
 #[crud_table(table_name: medicine)]
 #[derive(Serialize, Deserialize)]

@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  web:
+    build: ./web
+    ports:
+      - "8080:8080"
+    depends_on: 
+      - db
+  db:
+    image: postgres:14.5
+    environment:
+      POSTGRES_DB: "pharmacy"
+      POSTGRES_USER: "fume"
+      POSTGRES_PASSWORD: "1324"
+    volumes:
+      - ./db/up.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
