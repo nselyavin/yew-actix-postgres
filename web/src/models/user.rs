@@ -1,10 +1,14 @@
-use actix_web::{body::{MessageBody, BoxBody}, Responder, HttpResponse, http::header::ContentType};
+use actix_web::{
+    body::{BoxBody, MessageBody},
+    http::header::ContentType,
+    HttpResponse, Responder,
+};
 use rbatis::{crud_table, DateTimeNative};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[crud_table(table_name: t_user)]
 #[derive(Serialize, Deserialize)]
-pub struct User{
+pub struct User {
     pub id: u64,
     pub username: String,
     pub email: String,
@@ -13,7 +17,7 @@ pub struct User{
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct UserInfo{
+pub struct UserInfo {
     pub id: u64,
     pub username: String,
     pub email: String,
@@ -21,23 +25,22 @@ pub struct UserInfo{
 }
 
 #[derive(Deserialize, Debug, Serialize, PartialEq, Clone)]
-pub struct UserToken{
-    pub token: String
+pub struct UserToken {
+    pub token: String,
 }
 
 #[derive(Deserialize)]
-pub struct UserLogin{
+pub struct UserLogin {
     pub email: String,
     pub password: String,
 }
 
 #[derive(Deserialize)]
-pub struct UserSignup{
+pub struct UserSignup {
     pub email: String,
     pub username: String,
     pub password: String,
 }
-
 
 impl Responder for UserInfo {
     type Body = BoxBody;

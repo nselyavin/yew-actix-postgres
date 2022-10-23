@@ -3,10 +3,12 @@ use serde::{Serialize, Deserialize};
 
 use super::user::User;
 
+#[crud_table(table_name: creator)]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Default)]
 pub struct Creator{
-    id: u64, 
-    name: String,
-    license_num: Option<u64>,
+    pub id: Option<u64>, 
+    pub name: String,
+    pub license_num: Option<u64>,
+    pub created_date: Option<DateTimeNative>,
 }
 

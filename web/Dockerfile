@@ -1,10 +1,12 @@
 FROM rust:1.64
 
 WORKDIR /usr/app/
-COPY ./ ./
+COPY "./src/" ./src/
+COPY "./Cargo.lock" ./
+COPY "./Cargo.toml" ./
+COPY "./.env" ./
 
 RUN cargo build --release 
 VOLUME "/usr/app/target"
 
-EXPOSE 8080
 CMD ["cargo", "run"]

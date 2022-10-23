@@ -32,7 +32,8 @@ ON CONFLICT DO NOTHING;
 CREATE TABLE IF NOT EXISTS creator(
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    license_num INTEGER
+    license_num INTEGER,
+    created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS medicine (
@@ -47,7 +48,7 @@ CREATE TABLE IF NOT EXISTS medicine (
 
 CREATE TABLE IF NOT EXISTS pharmacy (
     id BIGSERIAL PRIMARY KEY,
-    name TEXT,
+    name TEXT NOT NULL,
     location TEXT
 );
 

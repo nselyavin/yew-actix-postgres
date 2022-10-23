@@ -15,12 +15,11 @@ pub async fn create(user_data: &UserSignup, rb: &Rbatis, sflake: &Snowflake) -> 
         password: hash(user_data.password.clone(), 8).unwrap(),
     };
 
-    match rb.save(&user, &[]).await{
-        Ok(res) => 
-        {
+    match rb.save(&user, &[]).await {
+        Ok(res) => {
             log::info!("Successfully create user {}", user.username.clone());
             Some(user)
-        },
+        }
         Err(err) => {
             log::error!("Failed create user: {}", err.to_string());
             None
@@ -38,7 +37,7 @@ pub async fn find_by_id(id: u64) -> Result<User> {
 
 pub async fn find_by_email(email: &String, rb: &Rbatis) -> Option<User> {
     let res: Result<User> = rb.fetch_by_column("email", email).await;
-    match res{
+    match res {
         Ok(user) => Some(user),
         Err(err) => {
             log::error!("Failed find by email: {}", err.to_string());
